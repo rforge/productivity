@@ -56,8 +56,8 @@ or set the scaled option to TRUE to avoid numerical problems",
     return(res.tfp)
   } else {
     registerDoParallel(cores = cores)
+    id.vec <- unique(lo.data[, 1])
     if (!(is.null(by.id)) & !(is.null(by.year))) {
-      id.vec <- unique(lo.data[, 1])
       if (by.id > length(id.vec)) 
         stop("by.id is out of range: by.id must be lower or equal to ", paste(length(id.vec)), 
           .call = FALSE)

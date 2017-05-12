@@ -4,6 +4,8 @@
 \description{This function estimates and decomposes Färe-Primont productivity 
 and profitability levels and indices using Data Envelopment Analysis (DEA). 
 
+Shadow prices of input and output variables are also computed.
+
 When price information is provided, \code{fareprim} returns profitability measures and 
 their decomposition, in addition to productivity.}
 
@@ -17,13 +19,14 @@ indices = FALSE, by.id = NULL, by.year = NULL, out.levels = NULL, out.indices = 
   profitability assessment.}
   \item{id.var}{Number or text string which is the identifier variable of the evaluated firms.}
   \item{time.var}{Number or text string which represents the time period variable.}
-  \item{x.vars}{Input quantitiy variables. Can be a vector of text strings or integers.}
+  \item{x.vars}{Input quantity variables. Can be a vector of text strings or integers.}
   \item{y.vars}{Output quantity variables. Can be a vector of text strings or integers.}
   \item{w.vars}{Optional. Input price variables. Can be a vector of text strings or integers. 
   By default it is set to \code{NULL} so only productivity is computed.}
   \item{p.vars}{Optional. Output price variables. Can be a vector of text strings or integers. 
   By default it is set to \code{NULL} so only productivity is computed.}
-  \item{tech.change}{Logical. If \code{TRUE} (default), the model allows for technological change. See also the \code{Details} section.}
+  \item{tech.change}{Logical. If \code{TRUE} (default), the model allows for technological change. 
+    See also the \code{Details} section.}
   \item{tech.reg}{Logical. If \code{TRUE} (default), the model allows for negative technological change (i.e. technological regress). 
   See also the \code{Details} section.}
   \item{rts}{Character string specifying the returns to scale assumption to be considered. 
@@ -76,9 +79,9 @@ By default this option value is \code{FALSE}. However, in the case where \code{s
 warning when large (small) values are present in the input and output quantity variables. 
 The Färe-Primont index may be sensitive to the rescaling especially the mix efficiency component.
 
-When \code{indices} is set to \code{TRUE}, \code{fareprim()} returns a list of two dataframes: 
-the first one contains the productivity and profitability levels, while the second one includes the 
-corresponding change indices. By default \code{fareprim()} returns a list with a single dataframe 
+By default \code{fareprim()} returns a list with \emph{(i)} a dataframe of productivity and profitability levels 
+and \emph{(ii)} shadow prices corresponding to each input (\code{x.vars}) and output (\code{y.vars}) variables. 
+When \code{indices} is set to \code{TRUE}, \code{fareprim()} returns in addition the change indices 
 of productivity and profitability levels.
 
 By default \code{by.id = NULL} and \code{by.year = NULL}. Hence, when \code{indices = TRUE}, 
@@ -127,10 +130,14 @@ Note:
 when \code{w.vars} and \code{p.vars} are specified.\cr
 }
 
+\item{Shadowp}{Shadow prices related \code{x.vars} input variables and \code{y.vars} output are returned. 
+Shadow prices are named such as \code{Shadowp_} is prefixed to \code{x.vars} and \code{y.vars}.}
+
 \item{Indices}{Only provided if \code{indices = TRUE}. This dataframe contains the change indices 
 of the different elements computed in \code{Levels}. Each element is named with a prefix 
 "d" in front of the level name. For instance profitability change is named \code{dPROF} and 
 output-oriented efficiency change is named \code{dOTE}.}
+
 }
 
 \references{
@@ -164,12 +171,13 @@ FareP1 <- fareprim(data = usagri, id.var = "States", time.var = "Years", x.vars 
 y.vars = c(4:6), rts = "crs", orientation = "in", scaled = TRUE, indices = TRUE, 
 by.id = 1, by.year = 1)
   summary(FareP1[["Levels"]])
+  FareP1[["Shadowp"]]
 }
 
 # profitability and productivity levels and indices' computations
 \dontrun{
 FareP2 <- fareprim(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
-y.vars = c(4:6), p.vars = c(11:13), w.vars = c(14:17), scaled = TRUE, indices = TRUE, 
+y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), scaled = TRUE, indices = TRUE, 
 by.id = 1, by.year = 1)
   summary(FareP2[["Indices"]])
 }

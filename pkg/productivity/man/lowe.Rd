@@ -153,11 +153,9 @@ panel data, so the user should make sure to use a balanced panel.}
 # profitability and productivity levels and indices' computations
 \dontrun{
 Lowe.prod <- lowe(data = usagri, id.var = "States", time.var = "Years", 
-x.vars = c(7:10), y.vars = c(4:6), p.vars = c(11:13), w.vars = c(14:17), 
+x.vars = c(7:10), y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), 
 orientation = "in-out", scaled = TRUE, indices = TRUE, by.id = 1, by.year = 1)
   summary(Lowe.prod[["Levels"]])
   summary(Lowe.prod[["Indices"]])
 }
 }
-
-\keyword{models}

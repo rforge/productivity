@@ -1,7 +1,10 @@
 globalVariables(c("ano", "COST", "dmu", "OME.IME", "OSE.ISE", "OSME.ISME", "OTE.ITE", "ROSE.RISE"))
 
 .onAttach <- function(lib, pkg) {
-    packageStartupMessage(paste0("\nPlease cite the 'productivity' package as:\n", "Dakpo K.H., Desjeux Y. and Latruffe L. (2016). productivity: Indices of Productivity and Profitability Using Data Envelopment Analysis (DEA). R package version 0.1.0. https://CRAN.R-Project.org/package=productivity.\n\n", 
-        "If you have questions, suggestions, or comments regarding the 'productivity' package, please use a forum or 'tracker' at productivity's R-Forge site:\n", "https://r-forge.r-project.org/projects/productivity/"), 
+    packageStartupMessage(paste0("\n* Please cite the 'productivity' package as:\n", 
+        "  Dakpo K.H., Desjeux Y. and Latruffe L. (2017). productivity: Indices of Productivity and Profitability Using Data Envelopment Analysis (DEA). R package version 0.2.0.\n\n", 
+        "See also: citation(\"productivity\")\n\n", 
+        "* For any questions, suggestions, or comments on the 'productivity' package, please make use Tracker facilities at:\n",
+        "  https://r-forge.r-project.org/projects/productivity/\n"), 
         domain = NULL, appendLF = TRUE)
 }

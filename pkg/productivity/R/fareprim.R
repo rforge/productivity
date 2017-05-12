@@ -25,8 +25,10 @@ or set the scaled option to TRUE to avoid numerical problems", call. = FALSE)
   }
   XREFs <- t(as.matrix(data[, step1$x.vars]))
   YREFs <- t(as.matrix(data[, step1$y.vars]))
-  P.fp <- du.fpo(Xs = apply(XREFs, 1, mean), Ys = apply(YREFs, 1, mean), XREFs, YREFs, rts)
   W.fp <- du.fpi(Xs = apply(XREFs, 1, mean), Ys = apply(YREFs, 1, mean), XREFs, YREFs, rts)
+  P.fp <- du.fpo(Xs = apply(XREFs, 1, mean), Ys = apply(YREFs, 1, mean), XREFs, YREFs, rts)
+  Shadowp <- c(W.fp, P.fp)
+  names(Shadowp)<- c(paste0("Shadowp_",names(data[x.vars])), paste0("Shadowp_",names(data[y.vars])))
     if (cores <= 1) {
       cores <- 1
     }
@@ -48,7 +50,7 @@ or set the scaled option to TRUE to avoid numerical problems", call. = FALSE)
   if (!is.null(out.levels)) 
     write.csv(fp.data, file = out.levels)
   if (indices == FALSE) {
-    res.tfp <- list(Levels = fp.data)
+    res.tfp <- list(Levels = fp.data, Shadowp = Shadowp)
     class(res.tfp) <- c("list", "FarePrimont")
     return(res.tfp)
   } else {
@@ -58,8 +60,8 @@ or set the scaled option to TRUE to avoid numerical problems", call. = FALSE)
     names.var <- names(fp.data)
     names.ind <- names.var[names.var %in% names.fp]
     registerDoParallel(cores = cores)
+    id.vec <- unique(fp.data[, 1])
     if (!(is.null(by.id)) & !(is.null(by.year))) {
-      id.vec <- unique(fp.data[, 1])
       if (by.id > length(id.vec)) 
         stop("by.id is out of range: by.id must be lower or equal to ", paste(length(id.vec)), 
           .call = FALSE)
@@ -101,7 +103,7 @@ or set the scaled option to TRUE to avoid numerical problems", call. = FALSE)
     names(indices.2)[-c(1, 2)] <- paste0("d", names.ind)
     if (!is.null(out.indices)) 
       write.csv(indices.2, file = out.indices)
-    res.tfp <- list(Levels = fp.data, Indices = indices.2)
+    res.tfp <- list(Levels = fp.data, Shadowp = Shadowp, Indices = indices.2)
     class(res.tfp) <- c("list", "FarePrimont")
     return(res.tfp)
   }
