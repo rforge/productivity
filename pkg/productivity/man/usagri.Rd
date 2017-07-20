@@ -33,7 +33,7 @@ Alabama 1996 = 1.}
   }
 }
 \details{
-More description on the data and the different variables can be found in the references.}
+Further details on the data and the different variables can be found in the references.}
 \source{
 \url{http://www.ers.usda.gov/data-products/agricultural-productivity-in-the-us.aspx}
 }
