@@ -4,7 +4,7 @@ malm <- function(data, id.var, time.var, x.vars, y.vars, tech.reg = TRUE,
 rts = c("vrs", "crs", "nirs", "ndrs"), orientation = c("out", "in"), parallel = FALSE, 
 cores = max(1, detectCores() - 1), scaled = FALSE) {
   step1 <- check.3(data, id.var, time.var, x.vars, y.vars)
-  if (!is.pbalanced(x = data, index = c(id.var, time.var))) 
+  if (!balanced(data = data, id.var = id.var, time.var = time.var)) 
     stop("Malmquist index can only be computed from balanced data. Please consider balancing the data.", call. = FALSE)
   rts <- match.arg(rts)
   RTS <- c("vrs", "crs", "nirs", "ndrs")

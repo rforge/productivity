@@ -1,20 +1,18 @@
-\name{fareprim}
-\alias{fareprim}
-\alias{print.FarePrimont}
-\title{Fare-Primont productivity and profitability index}
+\name{hicksmoorsteen}
+\alias{hicksmoorsteen}
+\alias{print.HicksMoorsteen}
+\title{Hicks-Moorsteen productivity and profitability index}
 \description{Using Data Envelopment Analysis (DEA), this function measures 
-productivity and profitability in levels and changes with Färe-Primont index.
+productivity and profitability in levels and changes with Hicks-Moorsteen index.
 
-Profitability measures are only provided when price information is specified.
+The Hicks-Moorsteen index is the geometric average of the Malmquist-MS and the Malmquist-NT.}
 
-Deflated shadow prices of inputs and outputs are also computed.}
-
-\usage{fareprim(data, id.var, time.var, x.vars, y.vars, w.vars = NULL, p.vars = NULL, 
+\usage{hicksmoorsteen(data, id.var, time.var, x.vars, y.vars, w.vars = NULL, p.vars = NULL, 
   tech.change = TRUE, tech.reg = TRUE, rts = c("vrs", "crs", "nirs", "ndrs"), 
   orientation = c("out", "in", "in-out"), parallel = FALSE, cores = max(1, 
-  detectCores() - 1), scaled = FALSE, by.id = NULL, by.year = NULL)
+  detectCores() - 1), scaled = FALSE)
 
-\method{print}{FarePrimont}(x, digits = NULL, \dots)}
+\method{print}{HicksMoorsteen}(x, digits = NULL, \dots)}
 
 \arguments{
   \item{data}{A dataframe containing the required information for measuring productivity and 
@@ -45,18 +43,14 @@ Deflated shadow prices of inputs and outputs are also computed.}
   for parallel computation. By default, \code{cores = max(1, detectCores() - 1)}.}
   \item{scaled}{Logical. Default is \code{FALSE}. When set to \code{TRUE}, the input and output 
   quantities are rescaled. See also the \code{Details} section.}
-  \item{by.id}{Integer specifying the reference observation used for computing the indices (Optional). 
-  \code{by.id} must range between one and the total number of firms per period. See also the \code{Details} section.}
-  \item{by.year}{Integer specifying the reference year used for computing the indices (Optional). 
-  \code{by.year} must range between one and the total number of time periods. See also the \code{Details} section.}
-  \item{x}{An object of class \verb{'FarePrimont'}.}
+  \item{x}{An object of class \verb{'HicksMoorsteen'}.}
   \item{digits}{The minimum number of significant digits to be printed in values.
   Default = \code{max(3, getOption("digits") - 3)}.} 
   \item{\dots}{Currently not used.} 
 }
 
 \details{
-\code{fareprim()} allows for parallel computations (when \code{parallel = TRUE}, possibly by 
+\code{hicksmoorsteen()} allows for parallel computations (when \code{parallel = TRUE}, possibly by 
 registering a parallel backend (\pkg{doParallel} and \pkg{foreach} packages)). The \code{cores} argument 
 can be used to specify the number of cores to use. However, when the sample size is small, it is 
 recommended to keep the \code{parallel} option to its default value (\code{FALSE}).
@@ -66,23 +60,17 @@ All DEA linear programs are implemented using the package \pkg{Rglpk}.
 The \code{tech.change} option allows to prohibit technological change. When \code{tech.change} 
 is set to \code{FALSE}, this overrides the effect of \code{tech.reg}. The \code{tech.reg} option, 
 when set to \code{FALSE}, rules out negative technological change (i.e. technological regress). 
-In this case, technological change will increment between consecutive periods. 
 
 The \code{scaled} option is useful when working with very large (>1e5) and/or very small (<1e-4) values. 
-By default \code{scaled = FALSE}. In such case, \code{fareprim()} may issue a warning when very large 
-(or very small) values are present in the input and output quantity variables. 
-Note that the Färe-Primont index may be sensitive to the rescaling, especially the mix efficiency component.
+By default \code{scaled = FALSE}. In such case, \code{hicksmoorsteen()} may issue a warning when very large 
+(or very small) values are present in the input and output quantity variables.
+Note that the Hicks-Moorsteen index may be sensitive to the rescaling, especially the mix efficiency component.
 
-By default \code{by.id = NULL} and \code{by.year = NULL}. This means that in the computation of 
-change indices, each observation is by default compared to itself in the first period. \code{by.id} and 
-\code{by.year} allow to specify a  reference (e.g. a specific observation in a specific period). 
-If \code{by.id} is specified and \code{by.year = NULL}, then the reference observation is \code{by.id} 
-in the first period. If \code{by.year} is specified and \code{by.id = NULL}, then each observation is compared 
-to itself in the specified period of time.
-}
+The Hicks-Moorsteen index is not transitive and therefore each firm is compared to itself in the previous period. 
+Since there is no previous period for the first period, the results for this first period are replaced by \code{NA}. }
 
 \value{
-\code{fareprim()} returns a list of class \verb{'FarePrimont'} for which a summary of productivity and profitability 
+\code{hicksmoorsteen()} returns a list of class \verb{'HicksMoorsteen'} for which a summary of productivity and profitability 
 (if price information is specified) measures in levels and changes is printed, as well as input (\code{x.vars}) and 
 output (\code{y.vars}) deflated shadow prices.
 
@@ -92,7 +80,7 @@ This list contains the following items:
   \tabular{ll}{
     \code{REV} \tab Revenues \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
     \code{COST} \tab Costs \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
-    \code{PROF} \tab Profitability \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
+    \code{PROF} \tab Profitability (\emph{if \code{w.vars} and \code{p.vars} are specified)}\cr
     \code{P} \tab Aggregated output prices \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
     \code{W} \tab Aggregated input prices \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
     \code{TT} \tab Terms of trade (i.e. \code{P/W}) \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
@@ -122,57 +110,65 @@ This list contains the following items:
 \item{Changes}{Change indices of the different elements of \code{Levels} are provided. Each change is prefixed by 
  \code{"d"} (e.g. profitability change is denoted \code{dPROF}, output-oriented efficiency change is denoted \code{dOTE}, etc.).}
 
-\item{Shadowp}{The deflated cost input shadow prices and the deflated revenue output shadow prices of 
-the representative observation used to compute the Färe-Primont index. 
-These prices are derived from dual input- and output-oriented DEA models.\cr}
+\item{Shadowp}{The deflated cost input shadow prices and the deflated revenue output shadow prices. 
+These prices are derived from dual input- and output-oriented DEA models for each observation in the sample.\cr}
 
-From an object of class \verb{'FarePrimont'} obtained from \code{fareprim()}, the 
+From an object of class \verb{'HicksMoorsteen'} obtained from \code{hicksmoorsteen()}, the 
 \itemize{
-\item \code{\link{Levels}} function extracts productivity and profitability \bold{levels};
-\item \code{\link{Changes}} function extracts productivity and profitability \bold{change indices}; and 
+\item \code{\link{Levels}} function extracts Hicks-Moorsteen productivity and profitability \bold{levels};
+\item \code{\link{Changes}} function extracts Hicks-Moorsteen productivity and profitability \bold{change indices}; and 
 \item \code{\link{Shadowp}} function extracts input and output \bold{deflated shadow prices}.}
 }
 
 \references{
+
+Briec W., and Kerstens K. (2011). The Hicks-Moorsteen Productivity Index Satisfies the 
+Determinateness Axiom. \emph{The Manchester School}, \bold{79}(4), 765--775. 
+\url{https://doi.org/10.1111/j.1467-9957.2010.02169.x}
+
 O'Donnell C.J. (2008), An aggregate quantity-price framework for measuring 
 and decomposing productivity and profitability change. School of Economics, 
 University of Queensland, Australia.
+URL: \url{https://www.uq.edu.au/economics/cepa/docs/WP/WP072008.pdf}
+
+O'Donnell C.J. (2010). Measuring and decomposing agricultural productivity and profitability 
+change. \emph{Australian Journal of Agricultural and Resource Economics}, \bold{54}(4), 527--560.
+\url{https://doi.org/10.1111/j.1467-8489.2010.00512.x}
 
 O'Donnell C.J. (2011), The sources of productivity change in the manufacturing 
 sectors of the U.S. economy. School of Economics, University of Queensland, Australia.
-URL: \url{http://www.uq.edu.au/economics/cepa/docs/WP/WP072011.pdf }
-
-O'Donnell C.J. (2012), Nonparametric estimates of the components of productivity 
-and profitability change in U.S. agriculture. \emph{American Journal of Agricultural 
-Economics}, \bold{94}(4), 873--890.}
+URL: \url{http://www.uq.edu.au/economics/cepa/docs/WP/WP072011.pdf}
+}
 
 \author{K Hervé Dakpo, Yann Desjeux, Laure Latruffe}
 
-\note{All output-oriented efficiency scores are computed \emph{a la} Shephard, while all 
-input-oriented efficiency scores are computed \emph{a la} Farrell.
-Hence, all efficiency scores are greater than zero and are lower or equal to one.}
+\note{All output-oriented efficiency scores are computed \emph{a la} Shephard, while all input-oriented efficiency 
+scores are computed \emph{a la} Farrell. Hence, all efficiency scores are greater than zero and are lower or equal to one.}
 
-\section{Warning}{The \code{fareprim()} function might not properly work with unbalanced 
-panel data.}
+\section{Warning}{The \code{hicksmoorsteen()} function will not work with unbalanced data. The productivity levels are 
+obtained using shadow prices computed using dual (multipliers) DEA models. However, the issue 
+of multiple solutions can yield (for some observations) different results compared to other softwares like DPIN 
+or other simplex algorithm packages.}
 
-\seealso{See \code{\link{Levels}} to retrieve a data frame with Färe-Primont 
+\seealso{See \code{\link{Levels}} to retrieve a data frame with Hicks-Moorsteen 
 productivity and profitability in levels and components.\cr
-See \code{\link{Changes}} to retrieve a data frame with Färe-Primont 
+See \code{\link{Changes}} to retrieve a data frame with Hicks-Moorsteen 
 productivity and profitability changes and components.\cr
 See \code{\link{Shadowp}} to retrieve deflated input and output shadow prices.\cr
-See also \code{\link{lowe}} for computations with an alternative transitive index.}
+
+See also \code{\link{malmMS}} and \code{\link{malmNT}} for computation with alternative indices.}
 
 \examples{
 \dontrun{
-## Färe-Primont productivity, without price information
-  FareP1 <- fareprim(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
-  y.vars = c(4:6), rts = "crs", orientation = "in", scaled = TRUE, by.id = 1, by.year = 1)
-    FareP1
+## Hicks-Moorsteen productivity, without price information
+  Hicks1 <- hicksmoorsteen(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
+  y.vars = c(4:6), rts = "crs", orientation = "in", scaled = TRUE)
+    Hicks1
 
-## Färe-Primont productivity and profitability, with price information
-  FareP2 <- fareprim(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
-  y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), scaled = TRUE, by.id = 1, by.year = 1)
-    FareP2
+## Hicks-Moorsteen productivity and profitability, with price information
+  Hicks2 <- hicksmoorsteen(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
+  y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), scaled = TRUE)
+    Hicks2
 }
 }
 

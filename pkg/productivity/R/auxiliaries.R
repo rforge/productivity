@@ -590,16 +590,43 @@ DI.shdu <- function(XOBS, YOBS, XREF, YREF, rts) {
 ## apply a function to divide 2 columns
 fdiv <- function(x) x[, 1]/x[, 2]
 
+## Round-up all values
+round.up <- function(x, n) sign(x) * trunc(abs(x) * 10^n + 0.5)/10^n
+
+# integer check
+is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) abs(x - round(x)) < tol
+
+## year vector for each spatial region when window is provided
+lyear <- function(x, data, step1) {
+  unique(data[, step1$time.var])[seq(1, length(unique(data[, step1$time.var])), by = x)]
+}
+
+## Test for balanced panel data
+balanced <- function(data, id.var, time.var) {
+  x <- data[, id.var]
+  y <- data[, time.var]
+  if (length(x) != length(y)) stop(paste0("The length of the two vectors (i.e. ", id.var, " and ", time.var, ") differs\n"))
+  x <- data[, id.var][drop = TRUE]
+  y <- data[, time.var][drop = TRUE]
+  z <- table(x, y)
+  if (any(as.vector(z) == 0)) {
+    balanced <- FALSE
+  } else {
+    balanced <- TRUE
+  }
+  return(balanced)
+}
+
 ## Return functions (i.e. Levels(); Changes(); Shadowp())
 Levels <- function(object, ...) {
-    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Malmquist", "Paasche"))) {
+    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Malmquist", "Paasche", "Malmquist-ms", "Malmquist-nt", "Hicks-Moorsteen"))) {
         stop("Function 'Levels' can not be applied to an object of class \"", class(object), "\"")
     }
     return(object$Levels)
 }
 
 Changes <- function(object, ...) {
-    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Malmquist", "Paasche"))) {
+    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Malmquist", "Paasche", "Malmquist-ms", "Malmquist-nt", "Hicks-Moorsteen"))) {
         stop("Function 'Changes' can not be applied to an object of class \"", class(object), "\"")
     }
     return(object$Changes)
@@ -609,7 +636,7 @@ Shadowp <- function(object, ...) {
     if (is(object, c("Malmquist"))) {
         stop("Function 'Shadowp' can not be applied to an object of class \"", class(object)[2], "\"")
     }
-    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Paasche"))) {
+    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Paasche", "Malmquist-ms", "Malmquist-nt", "Hicks-Moorsteen"))) {
         stop("Function 'Shadowp' can not be applied to an object of class \"", class(object), "\"")
     }
     return(object$Shadowp)

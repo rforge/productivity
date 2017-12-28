@@ -92,32 +92,24 @@ This list contains the following items:
     \code{OTE} \tab Output-oriented technical efficiency score\cr
     \code{OSE} \tab Output-oriented scale efficiency score\cr
     \code{RAE} \tab Revenue allocative efficiency\cr
-               \tab \code{  }(equivalent to output-oriented mix efficiency score)\cr
+               \tab \emph{(equivalent to output-oriented mix efficiency score)}\cr
     \code{ROSE} \tab Residual output-oriented scale efficiency score\cr
     \code{OSME} \tab Output-oriented scale-mix efficiency score\cr
     \code{ITE} \tab Input-oriented technical efficiency score\cr
     \code{ISE} \tab Input-oriented scale efficiency score\cr
     \code{CAE} \tab Cost allocative efficiency\cr
-               \tab \code{  }(equivalent to input-oriented mix efficiency score)\cr
+               \tab \emph{(equivalent to input-oriented mix efficiency score)}\cr
     \code{RISE} \tab Residual input-oriented scale efficiency score\cr
     \code{ISME} \tab Input-oriented scale-mix efficiency score\cr
-    \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE}\cr
-                   \tab \code{  }(when \code{orientation = "in-out"})\cr
-    \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE}\cr
-                   \tab \code{  }(when \code{orientation = "in-out"})\cr
-    \code{RAE.CAE} \tab Geometric mean of \code{RAE} and \code{CAE}\cr
-                   \tab \code{  }(when \code{orientation = "in-out"})\cr
-    \code{ROSE.RISE} \tab Geometric mean of \code{ROSE} and \code{RISE}\cr
-                     \tab \code{  }(when \code{orientation = "in-out"})\cr
-    \code{OSME.ISME} \tab Geometric mean of \code{OSME} and \code{ISME}\cr
-                     \tab \code{  }(when \code{orientation = "in-out"})\cr
+    \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE} \emph{(when \code{orientation = "in-out"})}\cr
+    \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE} \emph{(when \code{orientation = "in-out"})}\cr
+    \code{RAE.CAE} \tab Geometric mean of \code{RAE} and \code{CAE} \emph{(when \code{orientation = "in-out"})}\cr
+    \code{ROSE.RISE} \tab Geometric mean of \code{ROSE} and \code{RISE} \emph{(when \code{orientation = "in-out"})}\cr
+    \code{OSME.ISME} \tab Geometric mean of \code{OSME} and \code{ISME} \emph{(when \code{orientation = "in-out"})}\cr
     \code{RME} \tab Residual mix efficiency score\cr
-    \code{RE} \tab Revenue efficiency\cr
-              \tab \code{  }(when \code{orientation = "out"})\cr
-    \code{CE} \tab Cost efficiency\cr
-              \tab (when \code{orientation = "in"})\cr
-    \code{RE.CE} \tab Geometric mean of \code{RE} and \code{CE}\cr
-                 \tab \code{  }(when \code{orientation = "in-out"})}
+    \code{RE} \tab Revenue efficiency \emph{(when \code{orientation = "out"})}\cr
+    \code{CE} \tab Cost efficiency \emph{(when \code{orientation = "in"})}\cr
+    \code{RE.CE} \tab Geometric mean of \code{RE} and \code{CE} \emph{(when \code{orientation = "in-out"})}}
 }
 
 \item{Changes}{Change indices of the different elements of \code{Levels} are provided. 

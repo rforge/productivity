@@ -15,8 +15,7 @@ lowe <- function(data, id.var, time.var, x.vars, y.vars, w.vars, p.vars, tech.ch
   data <- data[order(data[, step1$time.var], data[, step1$id.var]), ]
   year.vec <- unique(data[, time.var])
   if (scaled == FALSE) {
-    if (any(data[, c(step1$x.vars, step1$y.vars)] >= 1e+05 | data[, c(step1$x.vars, step1$y.vars)] <= 
-      1e-04)) 
+    if (any(data[, c(step1$x.vars, step1$y.vars)] >= 1e+05 | data[, c(step1$x.vars, step1$y.vars)] <= 1e-04)) 
       warning("Some quantity variables are not between 1e-4 and 1e5. We recommend rescaling the data 
 or set the scaled option to TRUE to avoid numerical problems\n\r", 
         call. = FALSE)

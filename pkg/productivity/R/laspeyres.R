@@ -4,7 +4,7 @@ laspeyres <- function(data, id.var, time.var, x.vars, y.vars, w.vars, p.vars, te
   tech.reg = TRUE, rts = c("vrs", "crs", "nirs", "ndrs"), orientation = c("out", "in", "in-out"), 
   parallel = FALSE, cores = max(1, detectCores() - 1), scaled = FALSE) {
   step1 <- check.2(data, id.var, time.var, x.vars, y.vars, w.vars, p.vars)
-  if (!is.pbalanced(x = data, index = c(id.var, time.var))) 
+  if (!balanced(data = data, id.var = id.var, time.var = time.var)) 
     stop("Laspeyres index can only be computed from balanced data. Please consider balancing the data.", call. = FALSE)
   rts <- match.arg(rts)
   RTS <- c("vrs", "crs", "nirs", "ndrs")
@@ -15,8 +15,7 @@ laspeyres <- function(data, id.var, time.var, x.vars, y.vars, w.vars, p.vars, te
   data <- data[order(data[, step1$time.var], data[, step1$id.var]), ]
   year.vec <- unique(data[, time.var])
   if (scaled == FALSE) {
-    if (any(data[, c(step1$x.vars, step1$y.vars)] >= 1e+05 | data[, c(step1$x.vars, step1$y.vars)] <= 
-      1e-04)) 
+    if (any(data[, c(step1$x.vars, step1$y.vars)] >= 1e+05 | data[, c(step1$x.vars, step1$y.vars)] <= 1e-04)) 
       warning("Some quantity variables are not between 1e-4 and 1e5. We recommend rescaling the data 
         or set the scaled option to TRUE to avoid numerical problems\n\r", 
         call. = FALSE)

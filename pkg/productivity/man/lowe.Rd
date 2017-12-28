@@ -109,16 +109,11 @@ This list contains the following items:
     \code{IME} \tab Input-oriented mix efficiency score\cr
     \code{RISE} \tab Residual input-oriented scale efficiency score\cr
     \code{ISME} \tab Input-oriented scale-mix efficiency score\cr
-    \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE}\cr
-                   \tab \code{  }(when \code{orientation = "in-out"})\cr
-    \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE}\cr
-                   \tab \code{  }(when \code{orientation = "in-out"})\cr
-    \code{OME.IME} \tab Geometric mean of \code{OME} and \code{IME}\cr
-                   \tab \code{  }(when \code{orientation = "in-out"})\cr
-    \code{ROSE.RISE} \tab Geometric mean of \code{ROSE} and \code{RISE}\cr
-                     \tab \code{  }(when \code{orientation = "in-out"})\cr
-    \code{OSME.ISME} \tab Geometric mean of \code{OSME} and \code{ISME}\cr
-                     \tab \code{  }(when \code{orientation = "in-out"})\cr
+    \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE} \emph{(when \code{orientation = "in-out"})}\cr
+    \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE} \emph{(when \code{orientation = "in-out"})}\cr
+    \code{OME.IME} \tab Geometric mean of \code{OME} and \code{IME} \emph{(when \code{orientation = "in-out"})}\cr
+    \code{ROSE.RISE} \tab Geometric mean of \code{ROSE} and \code{RISE} \emph{(when \code{orientation = "in-out"})}\cr
+    \code{OSME.ISME} \tab Geometric mean of \code{OSME} and \code{ISME} \emph{(when \code{orientation = "in-out"})}\cr
     \code{RME} \tab Residual mix efficiency score}
 }
 
@@ -137,17 +132,21 @@ From an object of class \verb{'Lowe'} obtained from \code{lowe()}, the
 }
 
 \references{
-O'Donnell C.J.(2008), An aggregate quantity-price framework for measuring 
+
+O'Donnell C.J. (2008), An aggregate quantity-price framework for measuring 
 and decomposing productivity and profitability change. School of Economics, 
 University of Queensland, Australia.
+URL: \url{https://www.uq.edu.au/economics/cepa/docs/WP/WP072008.pdf}
 
 O'Donnell C.J. (2011), The sources of productivity change in the manufacturing 
 sectors of the U.S. economy. School of Economics, University of Queensland, Australia.
 URL: \url{http://www.uq.edu.au/economics/cepa/docs/WP/WP072011.pdf }
 
 O'Donnell C.J. (2012), Nonparametric estimates of the components of productivity 
-and profitability change in U.S. aAgriculture. \emph{American Journal of Agricultural 
-Economics}, \bold{94}(4), 873--890.}
+and profitability change in U.S. Agriculture. \emph{American Journal of Agricultural 
+Economics}, \bold{94}(4), 873--890.
+\url{https://doi.org/10.1093/ajae/aas023}
+}
 
 \author{K Hervé Dakpo, Yann Desjeux, Laure Latruffe}
 
