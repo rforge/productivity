@@ -137,14 +137,16 @@ From an object of class \verb{'FarePrimont'} obtained from \code{fareprim()}, th
 O'Donnell C.J. (2008), An aggregate quantity-price framework for measuring 
 and decomposing productivity and profitability change. School of Economics, 
 University of Queensland, Australia.
+URL: \url{https://www.uq.edu.au/economics/cepa/docs/WP/WP072008.pdf }
 
 O'Donnell C.J. (2011), The sources of productivity change in the manufacturing 
 sectors of the U.S. economy. School of Economics, University of Queensland, Australia.
 URL: \url{http://www.uq.edu.au/economics/cepa/docs/WP/WP072011.pdf }
 
 O'Donnell C.J. (2012), Nonparametric estimates of the components of productivity 
-and profitability change in U.S. agriculture. \emph{American Journal of Agricultural 
-Economics}, \bold{94}(4), 873--890.}
+and profitability change in U.S. Agriculture. \emph{American Journal of Agricultural 
+Economics}, \bold{94}(4), 873--890.
+\url{https://doi.org/10.1093/ajae/aas023 }}
 
 \author{K Hervé Dakpo, Yann Desjeux, Laure Latruffe}
 
@@ -160,6 +162,7 @@ productivity and profitability in levels and components.\cr
 See \code{\link{Changes}} to retrieve a data frame with Färe-Primont 
 productivity and profitability changes and components.\cr
 See \code{\link{Shadowp}} to retrieve deflated input and output shadow prices.\cr
+
 See also \code{\link{lowe}} for computations with an alternative transitive index.}
 
 \examples{

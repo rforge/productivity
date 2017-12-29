@@ -161,13 +161,13 @@ See also \code{\link{malmMS}} and \code{\link{malmNT}} for computation with alte
 \examples{
 \dontrun{
 ## Hicks-Moorsteen productivity, without price information
-  Hicks1 <- hicksmoorsteen(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
-  y.vars = c(4:6), rts = "crs", orientation = "in", scaled = TRUE)
+  Hicks1 <- hicksmoorsteen(data = usagri, id.var = "States", time.var = "Years", 
+  x.vars = c(7:10), y.vars = c(4:6), rts = "crs", orientation = "in", scaled = TRUE)
     Hicks1
 
 ## Hicks-Moorsteen productivity and profitability, with price information
-  Hicks2 <- hicksmoorsteen(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
-  y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), scaled = TRUE)
+  Hicks2 <- hicksmoorsteen(data = usagri, id.var = "States", time.var = "Years", 
+  x.vars = c(7:10), y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), scaled = TRUE)
     Hicks2
 }
 }

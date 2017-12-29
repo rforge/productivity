@@ -69,7 +69,7 @@ fish.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientati
         cat('Progress:', ano/length(year.vec)*100, '%', '\r')
         flush.console()
         if(ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == 
-        year.vec[ano], step1$id.var])) cat('DONE!          \n\r')
+        year.vec[ano], step1$id.var])) cat('DONE!               \n\r')
       }
     P.Qt <- sum(P1[, dmu] * Y1[, dmu])
     P.Qs <- sum(P1[, dmu] * Y2[, dmu])
@@ -295,7 +295,7 @@ fish.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parall
         cat('Progress:', ano/length(year.vec)*100, '%', '\r')
         flush.console()
         if(ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == 
-        year.vec[ano], step1$id.var])) cat('DONE!          \n\r')
+        year.vec[ano], step1$id.var])) cat('DONE!               \n\r')
       }
     P.Qt <- sum(P1[, dmu] * Y1[, dmu])
     P.Qs <- sum(P1[, dmu] * Y2[, dmu])

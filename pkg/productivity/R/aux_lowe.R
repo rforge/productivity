@@ -26,7 +26,7 @@ lo.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation
       cat("Progress:", ano/length(year.vec) * 100, "%", "\r")
       flush.console()
       if (ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == year.vec[ano], step1$id.var])) 
-        cat("DONE!\n\r")
+        cat("DONE!               \n\r")
     }
     AO <- sum(PRICESO * Y1[, dmu])
     AI <- sum(PRICESI * X1[, dmu])
@@ -130,7 +130,7 @@ lo.2 <- function(data, data.in, step1, rts, orientation, parallel, scaled, PRICE
       cat("Progress:", round(dmu/length(data[, step1$id.var]) * 100, 0), "%", "\r")
       flush.console()
       if (dmu == length(data[, step1$id.var])) 
-        cat("DONE!\n\r")
+        cat("DONE!               \n\r")
     }
     AO <- sum(PRICESO * Y1[, dmu])
     AI <- sum(PRICESI * X1[, dmu])

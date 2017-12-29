@@ -28,10 +28,10 @@ malm.1 <- function(data, step1, ano, year.vec, tech.reg, rts, orientation, paral
       .combine = rbind, .packages = c("Rglpk")) %dopar% {
       if (parallel == FALSE) {
         cat("\r")
-        cat('Progress:', round(ano/(length(year.vec) - 1)*100,0), '%', '\r')
+        cat('Progress:', round(ano/length(year.vec)*100,0), '%', '\r')
         flush.console()
           if(ano == (length(year.vec) - 1) & dmu == length(data[data[, step1$time.var] == 
-          year.vec[ano], step1$id.var])) cat('DONE!          \n\r')
+          year.vec[ano], step1$id.var])) cat('DONE!               \n\r')
         }
       # n1n2n3: period reference, period input, period output
       if (orientation == "out") {
@@ -62,10 +62,10 @@ malm.1 <- function(data, step1, ano, year.vec, tech.reg, rts, orientation, paral
       .combine = rbind, .packages = c("Rglpk")) %dopar% {
       if (parallel == FALSE) {
           cat("\r")
-          cat('Progress:', round(ano/(length(year.vec) - 1)*100,0), '%', '\r')
+          cat('Progress:', round(ano/length(year.vec)*100,0), '%', '\r')
           flush.console()
           if(ano == (length(year.vec) - 1) & dmu == length(data[data[, step1$time.var] == 
-          year.vec[ano], step1$id.var])) cat('DONE!          \n\r')
+          year.vec[ano], step1$id.var])) cat('DONE!               \n\r')
         }
       # n1n2n3: period reference, period input, period output
       if (orientation == "out") {

@@ -619,14 +619,14 @@ balanced <- function(data, id.var, time.var) {
 
 ## Return functions (i.e. Levels(); Changes(); Shadowp())
 Levels <- function(object, ...) {
-    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Malmquist", "Paasche", "Malmquist-ms", "Malmquist-nt", "Hicks-Moorsteen"))) {
+    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Malmquist", "Paasche", "MalmquistMS", "MalmquistNT", "HicksMoorsteen"))) {
         stop("Function 'Levels' can not be applied to an object of class \"", class(object), "\"")
     }
     return(object$Levels)
 }
 
 Changes <- function(object, ...) {
-    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Malmquist", "Paasche", "Malmquist-ms", "Malmquist-nt", "Hicks-Moorsteen"))) {
+    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Malmquist", "Paasche", "MalmquistMS", "MalmquistNT", "HicksMoorsteen"))) {
         stop("Function 'Changes' can not be applied to an object of class \"", class(object), "\"")
     }
     return(object$Changes)
@@ -636,7 +636,7 @@ Shadowp <- function(object, ...) {
     if (is(object, c("Malmquist"))) {
         stop("Function 'Shadowp' can not be applied to an object of class \"", class(object)[2], "\"")
     }
-    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Paasche", "Malmquist-ms", "Malmquist-nt", "Hicks-Moorsteen"))) {
+    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Paasche", "MalmquistMS", "MalmquistNT", "HicksMoorsteen"))) {
         stop("Function 'Shadowp' can not be applied to an object of class \"", class(object), "\"")
     }
     return(object$Shadowp)

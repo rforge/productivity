@@ -69,7 +69,7 @@ paa.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientatio
       cat("Progress:", ano/length(year.vec) * 100, "%", "\r")
       flush.console()
       if (ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == year.vec[ano], step1$id.var])) 
-        cat("DONE!\n\r")
+        cat("DONE!               \n\r")
     }
     Qt <- sum(P1[, dmu] * Y1[, dmu])
     Qs <- sum(P1[, dmu] * Y2[, dmu])
@@ -266,7 +266,7 @@ paa.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, paralle
       cat("Progress:", ano/length(year.vec) * 100, "%", "\r")
       flush.console()
       if (ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == year.vec[ano], step1$id.var])) 
-        cat("DONE!\n\r")
+        cat("DONE!               \n\r")
     }
     Qt <- sum(P1[, dmu] * Y1[, dmu])
     Qs <- sum(P1[, dmu] * Y2[, dmu])

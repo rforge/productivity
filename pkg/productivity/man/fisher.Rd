@@ -131,6 +131,7 @@ From an object of class \verb{'Fisher'} obtained from \code{fisher()}, the
 \references{
 Diewert W.E. (1992), Fisher ideal output, input, and productivity indexes revisited. 
 \emph{Journal of Productivity Analysis}, \bold{3}(3), 211-248.
+\url{https://doi.org/10.1007/BF00158354}
 
 Coelli T.J., D.S.P. Rao, C.J. O'Donnell, and G.E. Battese (2005), 
 \emph{An Introduction to Efficiency and Productivity Analysis}. Springer Eds.
@@ -156,8 +157,8 @@ See \code{\link{Shadowp}} to retrieve deflated input and output shadow prices.\c
 See also \code{\link{laspeyres}} and \code{\link{paasche}} for computations with alternative indices.}
 
 \examples{
-## Fisher profitability and productivity levels and changes' computations
 \dontrun{
+## Fisher profitability and productivity levels and changes' computations
   Fisher.prod <- fisher(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
   y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), orientation = "out", scaled = TRUE)
     Fisher.prod

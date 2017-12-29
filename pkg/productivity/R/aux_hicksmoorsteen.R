@@ -54,7 +54,7 @@ hm.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation
       cat("Progress:", round.up(ano/length(year.vec) * 100, 0), "%", "\r")
       flush.console()
       if (ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == year.vec[ano], step1$id.var])) 
-        cat("DONE!\n\r")
+        cat("DONE!               n\r")
     }
     
     PRICESO.ms <- DO.shdu(XOBS = X2[, dmu], YOBS = Y1[, dmu], XREF = XREF2, YREF = YREF2, rts)
@@ -282,7 +282,7 @@ hm.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parallel
       cat("Progress:", round.up(ano/length(year.vec) * 100, 0), "%", "\r")
       flush.console()
       if (ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == year.vec[ano], step1$id.var])) 
-        cat("DONE!\n\r")
+        cat("DONE!               \n\r")
     }
     
     PRICESO.ms <- DO.shdu(XOBS = X2[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, rts)
@@ -481,8 +481,8 @@ print.HicksMoorsteen <- function(x, digits = NULL, ...) {
   print(summary(x[["Levels"]], digits = digits), digits = digits)
   cat("\n\nHicks-Moorsteen productivity and profitability changes (summary):\n\n")
   print(summary(x[["Changes"]], digits = digits), digits = digits)
-  cat("\n\nHicks-Moorsteen productivity shadow prices:\n\n")
-  print(x[["Shadowp"]], digits = digits)
+  cat("\n\nHicks-Moorsteen productivity shadow prices (summary):\n\n")
+  print(summary(x[["Shadowp"]], digits = digits), digits = digits)
   cat("\n")
   invisible(x)
 }

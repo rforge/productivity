@@ -1,15 +1,19 @@
 \name{Shadowp}
 \alias{Shadowp}
+
 \title{Shadow prices used in productivity and profitability computations}
 
 \description{From any object created by either \code{\link{fareprim}}, \code{\link{fisher}}, 
-\code{\link{laspeyres}}, \code{\link{lowe}}, or \code{\link{paasche}} function, this function extracts 
-the deflated cost input shadow prices along with the deflated revenue output shadow prices 
-used in productivity and profitability computations.}
+\code{\link{hicksmoorsteen}}, \code{\link{laspeyres}}, \code{\link{lowe}}, \code{\link{malmMS}}, 
+\code{\link{malmNT}} or \code{\link{paasche}} function, this function extracts the deflated 
+cost input shadow prices along with the deflated revenue output shadow prices used in 
+productivity and profitability computations.}
+
+\usage{Shadowp(object, \dots)}
 
 \arguments{
-  \item{object}{Object of class \verb{'FarePrimont'}, \verb{'Fisher'}, \verb{'Laspeyres'}, 
-  \verb{'Lowe'}, or \verb{'Paasche'}.}
+  \item{object}{Object of class \verb{'FarePrimont'}, \verb{'Fisher'}, \verb{'HicksMoorsteen'}, 
+  \verb{'Laspeyres'}, \verb{'Lowe'}, \verb{'MalmquistMS'}, \verb{'MalmquistNT'}, or \verb{'Paasche'}.}
   \item{\dots}{Currently not used.}
 }
 
@@ -17,13 +21,17 @@ used in productivity and profitability computations.}
 For all the price-based indices (i.e. Fisher, Lowe, Laspeyres and Paasche), deflated input and output shadow 
 prices \bold{for each observation} are return.
 
-For the Färe-Primont index, the deflated input and output shadow price \code{of the representative observation} 
-is returned.
+For Färe-Primont, Hicks-Moorsteen, Malmquist-MS and Malmquist-NT indices, the deflated input and output 
+shadow price \code{of the representative observation} is returned.
+
 \itemize{
 \item An object of class \verb{'FarePrimont'} is usually a result of a call to \code{\link{fareprim}}
 \item An object of class \verb{'Fisher'} is usually a result of a call to \code{\link{fisher}}
+\item An object of class \verb{'HicksMoorsteen'} is usually a result of a call to \code{\link{hicksmoorsteen}}
 \item An object of class \verb{'Laspeyres'} is usually a result of a call to \code{\link{laspeyres}}
 \item An object of class \verb{'Lowe'} is usually a result of a call to \code{\link{lowe}}
+\item An object of class \verb{'MalmquistMS'} is usually a result of a call to \code{\link{malmMS}}
+\item An object of class \verb{'MalmquistNT'} is usually a result of a call to \code{\link{malmNT}}
 \item An object of class \verb{'Paasche'} is usually a result of a call to \code{\link{paasche}}}
 }
 
@@ -32,9 +40,10 @@ included in the \code{"Shadowp"} constituent element of \code{object}.}
 
 \author{Yann Desjeux, K Hervé Dakpo, Laure Latruffe}
 
-\seealso{For details and information on returned values, see \code{\link{fareprim}}, 
-\code{\link{fisher}}, \code{\link{laspeyres}}, \code{\link{lowe}}, 
-or \code{\link{paasche}}.\cr
+\seealso{For details and information on returned values, see \code{\link{fareprim}}, \code{\link{fisher}}, 
+\code{\link{hicksmoorsteen}}, \code{\link{laspeyres}}, \code{\link{lowe}}, \code{\link{malmMS}}, 
+\code{\link{malmNT}} or \code{\link{paasche}}.\cr
+
 See also:\cr
 - \code{\link{Changes}} for productivity and profitability change indices; and \cr
 - \code{\link{Levels}} for productivity and profitability levels.}

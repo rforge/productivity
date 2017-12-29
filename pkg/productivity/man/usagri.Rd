@@ -9,7 +9,9 @@ quantities along with their respective price indices for 48 States.
 
 All quantities are expressed in thousand US$1996 and prices are relative to 
 Alabama 1996 = 1.}
+
 \usage{usagri}
+
 \format{
   A data frame with 480 observations on the following 17 variables.
   \describe{
@@ -32,20 +34,25 @@ Alabama 1996 = 1.}
     \item{\code{p.materials}}{Total intermediate inputs' relative price (1 = Alabama 1996).}
   }
 }
+
 \details{
 Further details on the data and the different variables can be found in the references.}
 \source{
 \url{http://www.ers.usda.gov/data-products/agricultural-productivity-in-the-us.aspx}
 }
+
 \references{
 Ball V.E., Gollop F.M., Kelly-Hawke A., and Swinand G.P. (1999), Patterns of state 
 productivity growth in the US farm sector: Linking state and aggregate models. 
-\emph{American Journal of Agricultural Economics}, \bold{81}, 164--179.
+\emph{American Journal of Agricultural Economics}, \bold{81}(1], 164--179.
+\url{https://doi.org/10.2307/1244458}
 
 Ball V.E., Hallahan C., and Nehring R. (2004), Convergence of productivity: An 
 analysis of the catch-up hypothesis within a panel of states. \emph{American Journal 
 of Agricultural Economics}, \bold{86}(5), 1315--1321.
+\url{https://doi.org/10.1111/j.0002-9092.2004.00683.x}
 }
+
 \examples{
 head(usagri)
 str(usagri)

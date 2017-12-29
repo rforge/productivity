@@ -19,6 +19,12 @@ None
 
 * Dependency to `plm` package is removed.
 
+* Update `Changes()` documentation.
+
+* Update `Levels()` documentation.
+
+* Update `Shadowp()` documentation.
+
 * Updated `DESCRIPTION` file.
 
 * Updated startup message.

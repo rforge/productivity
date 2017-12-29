@@ -150,11 +150,12 @@ productivity and profitability in levels and components.\cr
 See \code{\link{Changes}} to retrieve a data frame with Paasche 
 productivity and profitability change indices and components.\cr
 See \code{\link{Shadowp}} to retrieve deflated input and output shadow prices.\cr
+
 See also \code{\link{fisher}} and \code{\link{laspeyres}} for computations with alternative indices.}
 
 \examples{
-## Paasche profitability and productivity levels and changes' computations
 \dontrun{
+## Paasche profitability and productivity levels and changes' computations
   Paasche.prod <- paasche(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
   y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), orientation = "out", scaled = TRUE)
     Paasche.prod

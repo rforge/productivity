@@ -131,9 +131,9 @@ Moreover under \code{rts = "crs"}, both \code{orientation} options (i.e. \code{"
 See \code{\link{Changes}} to retrieve a data frame with Malmquist productivity index and its components.}
 
 \examples{
-## Malmquist productivity index compares each observation in period 1
-## to the same observation in period 0
 \dontrun{
+## Malmquist productivity index compares each observation in period 1 to the same 
+## observation in period 0
   Malmquist <- malm(data = usagri, id.var = "States", time.var = "Years", 
   x.vars = c("q.capital", "q.land","q.labor","q.materials"), 
   y.vars = c("q.livestock", "q.crop", "q.other"), rts = "nirs", scaled = TRUE)
