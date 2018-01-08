@@ -1,6 +1,6 @@
 Package: productivity
 Version: 1.1.0
-Date: 2017-12-28
+Date: 2018-01-05
 Title: Indices of Productivity Using Data Envelopment Analysis (DEA)
 Authors@R: c(
   person("K Hervé", "Dakpo", role = "aut"),
@@ -10,18 +10,19 @@ Maintainer: Yann Desjeux <yann.desjeux@inra.fr>
 Description:
   Levels and changes of productivity and profitability are measured with various indices.
   In addition to the classic Malmquist productivity index, the package contains also 
-  the multiplicatively complete Färe-Primont, Fisher, Laspeyres, Lowe, and Paasche indices. 
+  the multiplicatively complete Färe-Primont, Fisher, Laspeyres, Lowe, Paasche, 
+  and Hicks-Moorsteen (and its components, i.e. Malmquist-MS and Malmquist-NT) indices. 
   Färe-Primont and Lowe indices verify the transitivity property and can therefore be used for 
   multilateral or multitemporal comparison.
-  Fisher, Laspeyres, Malmquist, and Paasche indices are not transitive and are only to be used for 
-  binary comparison. 
+  Fisher, Laspeyres, Malmquist, Paasche, and Hicks-Moorsteen (and components) indices are not 
+  transitive and are only to be used for binary comparison. 
   All indices can also be decomposed into different components, providing insightful information 
   on the sources of productivity and profitability improvements. 
   In the use of Malmquist productivity index, the technological change index can be further 
   decomposed into bias technological change components. 
-  In the case of the Fisher, Laspeyres, Paasche and the transitive Färe-Primont and Lowe indices, 
-  it is furthermore possible to rule out technological change. Deflated shadow prices, used in 
-  those indices' computations, are also returned.
+  In the case of the Fisher, Laspeyres, Paasche, Hicks-Moorsteen (and components) and the transitive 
+  Färe-Primont and Lowe indices, it is furthermore possible to rule out technological change. 
+  Deflated shadow prices, used in those indices' computations, are also returned.
   The package also allows to prohibit negative technological change. 
   All computations are carried out with the nonparametric Data Envelopment Analysis (DEA), 
   and several assumptions regarding returns to scale are available.

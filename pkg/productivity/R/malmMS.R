@@ -123,7 +123,7 @@ malmMS <- function(data, id.var, time.var, x.vars, y.vars, w.vars = NULL, p.vars
   } else {
     19
   }]))
-  Shadowp <- cbind(data[, c(step1$id.var, step1$time.var)], if (dim(res.mal_ms.loop)[2] == 29) {
+  Shadowp <- cbind(data[, c(step1$id.var, step1$time.var)], if (dim(mal_ms.data)[2] == 19) {
     round.up(res.mal_ms.loop[, 29:(dim(res.mal_ms.loop)[2])], 4)
   } else {
     round.up(res.mal_ms.loop[, 23:(dim(res.mal_ms.loop)[2])], 4)

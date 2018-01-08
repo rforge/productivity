@@ -119,7 +119,7 @@ hicksmoorsteen <- function(data, id.var, time.var, x.vars, y.vars, w.vars = NULL
   } else {
     19
   }]))
-  Shadowp <- cbind(data[, c(step1$id.var, step1$time.var)], if (dim(res.hm.loop)[2] == 29) {
+  Shadowp <- cbind(data[, c(step1$id.var, step1$time.var)], if (dim(hm.data)[2] == 19) {
     round.up(res.hm.loop[, 29:(dim(res.hm.loop)[2])], 4)
   } else {
     round.up(res.hm.loop[, 23:(dim(res.hm.loop)[2])], 4)

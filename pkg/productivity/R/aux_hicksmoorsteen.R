@@ -43,8 +43,13 @@ hm.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation
   if (length(step1) == 6) {
     P1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$p.vars]))
     W1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$w.vars]))
-    Y.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$y.vars]))
-    X.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$x.vars]))
+    if (scaled == TRUE) {
+      Y.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$y.vars]))
+      X.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$x.vars]))
+    } else {
+      Y.ini <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
+      X.ini <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
+    }
   }
   
   res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), .combine = rbind, 
@@ -54,7 +59,7 @@ hm.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation
       cat("Progress:", round.up(ano/length(year.vec) * 100, 0), "%", "\r")
       flush.console()
       if (ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == year.vec[ano], step1$id.var])) 
-        cat("DONE!               n\r")
+        cat("DONE!               \n\r")
     }
     
     PRICESO.ms <- DO.shdu(XOBS = X2[, dmu], YOBS = Y1[, dmu], XREF = XREF2, YREF = YREF2, rts)
@@ -266,8 +271,13 @@ hm.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parallel
   if (length(step1) == 6) {
     P1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$p.vars]))
     W1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$w.vars]))
-    Y.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$y.vars]))
-    X.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$x.vars]))
+    if (scaled == TRUE) {
+      Y.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$y.vars]))
+      X.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$x.vars]))
+    } else {
+      Y.ini <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
+      X.ini <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
+    }
   }
   
   ## all periods reference
@@ -276,7 +286,6 @@ hm.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parallel
   
   res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), .combine = rbind, 
     .packages = c("Rglpk")) %dopar% {
-    
     if (parallel == FALSE) {
       cat("\r")
       cat("Progress:", round.up(ano/length(year.vec) * 100, 0), "%", "\r")
