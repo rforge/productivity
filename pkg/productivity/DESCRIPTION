@@ -27,7 +27,7 @@ Description:
   All computations are carried out with the nonparametric Data Envelopment Analysis (DEA), 
   and several assumptions regarding returns to scale are available.
   The package allows parallel computing as an option, depending on the user's computer configuration. 
-Depends: R (>= 2.16)
+Depends: R (>= 3.0.0)
 BugReports: https://r-forge.r-project.org/tracker/?group_id=2245
 Imports: Rglpk (>= 0.6-2), doParallel (>= 1.0.10), foreach (>= 1.2.0), methods
 License: GPL-3
