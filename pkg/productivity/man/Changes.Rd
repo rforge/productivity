@@ -43,10 +43,10 @@ See also:\cr
 
 \examples{
 \dontrun{
-  PAASCHE <- paasche(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
+  FAREPRIM <- fareprim(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
   y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), scaled = TRUE)
-  Paasche.change <- Changes(PAASCHE)
-  head(Paasche.change)
+  Fareprim.change <- Changes(FAREPRIM)
+  head(Fareprim.change)
 }
 }
 
