@@ -1,12 +1,10 @@
 # productivity 1.1.0
-Changes in 'productivity' version 1.1.0 (2017-12-28)
+Changes in 'productivity' version 1.1.0 (2018-02-02)
 
 ## NEW FEATURES
 
-* New productivity indices are now proposed:
-	- Malmquist-MS index(`malmMS()`)
-	- Malmquist-NT index (`malmNT()`)
-	- Hickcs-Moorsteen index (`hicksmoorsteen()`)
+* A new productivity index is now proposed:
+	- Hicks-Moorsteen index (`hicksmoorsteen()`), with its components (malmquist-hs and malmquist-it)
 
 ## BUG FIXES
 
@@ -17,13 +15,13 @@ None
 
 ## OTHER USER-VISIBLE CHANGES
 
+* {Rglpk} package is not used any more. All DEA linear programs are now implemented using the {lpSolveAPI} package.
+
+* An argument `shadow` is introduced in `fareprim()`, `fisher()`, `laspeyres()`, `lowe()`, `malm()`, and `paasche()` functions if one wants to retrieve shadow prices.
+
 * Dependency to `plm` package is removed.
 
-* Update `Changes()` documentation.
-
-* Update `Levels()` documentation.
-
-* Update `Shadowp()` documentation.
+* Updated functions' documentation.
 
 * Updated `DESCRIPTION` file.
 
