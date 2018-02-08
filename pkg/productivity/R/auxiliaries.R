@@ -255,46 +255,71 @@ DO.sh <- function(XOBS, YOBS, XREF, YREF, rts) {
   n_x <- dim(XREF)[1]
   n_y <- dim(YREF)[1]
   n_t <- dim(XREF)[2]
-  obj <- c(1, rep(0, n_t))
-  mat_x <- if (n_x == 1) {
-    c(0, XREF)
-  } else {
-    cbind(matrix(0, nrow = n_x, ncol = 1), XREF)
-  }
-  mat_y <- if (n_y == 1) {
-    c(-YOBS, YREF)
-  } else {
-    cbind(-matrix(YOBS, ncol = 1), YREF)
-  }
+  
   if (rts == "vrs") {
     # variable returns to scale
-    mat <- rbind(mat_x, mat_y, c(0, rep(1, n_t)))
-    dir <- c(rep("<=", n_x), rep(">=", n_y), "==")
-    rhs <- c(XOBS, rep(0, n_y), 1)
+    built.lp <- make.lp(n_x + n_y + 1, 1 + n_t)
+    for (i in 1:n_x) {
+      set.row(built.lp, i, c(0, XREF[i, ]))
+    }
+    for (j in 1:n_y) {
+      set.row(built.lp, n_x + j, c(-YOBS[j], YREF[j, ]))
+    }
+    set.row(built.lp, n_x + n_y + 1, c(0, rep(1, n_t)))
+    set.objfn(built.lp, c(1, rep(0, n_t)))
+    set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), "="))
+    set.rhs (built.lp, c(XOBS, rep(0, n_y), 1))
+    set.bounds(built.lp, lower = -Inf, upper = Inf, columns = 1)
   } else {
     if (rts == "nirs") {
       # nonincreasing returns to scale
-      mat <- rbind(mat_x, mat_y, c(0, rep(1, n_t)))
-      dir <- c(rep("<=", n_x), rep(">=", n_y), "<=")
-      rhs <- c(XOBS, rep(0, n_y), 1)
+      built.lp <- make.lp(n_x + n_y + 1, 1 + n_t)
+      for (i in 1:n_x) {
+        set.row(built.lp, i, c(0, XREF[i, ]))
+      }
+      for (j in 1:n_y) {
+        set.row(built.lp, n_x + j, c(-YOBS[j], YREF[j, ]))
+      }
+      set.row(built.lp, n_x + n_y + 1, c(0, rep(1, n_t)))
+      set.objfn(built.lp, c(1, rep(0, n_t)))
+      set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), "<="))
+      set.rhs (built.lp, c(XOBS, rep(0, n_y), 1))
+      set.bounds(built.lp, lower = -Inf, upper = Inf, columns = 1)
     } else {
       if (rts == "ndrs") {
         # nondecreasing returns to scale
-        mat <- rbind(mat_x, mat_y, c(0, rep(1, n_t)))
-        dir <- c(rep("<=", n_x), rep(">=", n_y), ">=")
-        rhs <- c(XOBS, rep(0, n_y), 1)
+        built.lp <- make.lp(n_x + n_y + 1, 1 + n_t)
+        for (i in 1:n_x) {
+          set.row(built.lp, i, c(0, XREF[i, ]))
+        }
+        for (j in 1:n_y) {
+          set.row(built.lp, n_x + j, c(-YOBS[j], YREF[j, ]))
+        }
+        set.row(built.lp, n_x + n_y + 1, c(0, rep(1, n_t)))
+        set.objfn(built.lp, c(1, rep(0, n_t)))
+        set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), ">="))
+        set.rhs (built.lp, c(XOBS, rep(0, n_y), 1))
+        set.bounds(built.lp, lower = -Inf, upper = Inf, columns = 1)
       } else {
         # constant returns to scale
-        mat <- rbind(mat_x, mat_y)
-        dir <- c(rep("<=", n_x), rep(">=", n_y))
-        rhs <- c(XOBS, rep(0, n_y))
+        built.lp <- make.lp(n_x + n_y, 1 + n_t)
+        for (i in 1:n_x) {
+          set.row(built.lp, i, c(0, XREF[i, ]))
+        }
+        for (j in 1:n_y) {
+          set.row(built.lp, n_x + j, c(-YOBS[j], YREF[j, ]))
+        }
+        set.objfn(built.lp, c(1, rep(0, n_t)))
+        set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y)))
+        set.rhs (built.lp, c(XOBS, rep(0, n_y)))
+        set.bounds(built.lp, lower = -Inf, upper = Inf, columns = 1)
       }
     }
   }
-  max <- TRUE
-  bounds <- list(lower = list(ind = 1L, val = -Inf), upper = list(ind = 1L, val = Inf))
-  opt <- Rglpk_solve_LP(obj, mat, dir, rhs, max = max, bounds = bounds)
-  DO <- 1/opt$optimum
+  
+  lp.control(built.lp, sense = "max")
+  solve(built.lp)
+  DO <- 1/get.objective(built.lp)
   DO
 }
 
@@ -302,42 +327,66 @@ DI.sh <- function(XOBS, YOBS, XREF, YREF, rts) {
   n_x <- dim(XREF)[1]
   n_y <- dim(YREF)[1]
   n_t <- dim(XREF)[2]
-  obj <- c(1, rep(0, n_t))
-  mat_x <- if (n_x == 1) {
-    c(-XOBS, XREF)
-  } else {
-    cbind(-matrix(XOBS, nrow = n_x), XREF)
-  }
-  mat_y <- if (n_y == 1) {
-    c(0, YREF)
-  } else {
-    cbind(matrix(0, nrow = n_y, ncol = 1), YREF)
-  }
+  
   if (rts == "vrs") {
-    mat <- rbind(mat_x, mat_y, c(0, rep(1, n_t)))
-    dir <- c(rep("<=", n_x), rep(">=", n_y), "==")
-    rhs <- c(rep(0, n_x), YOBS, 1)
+    built.lp <- make.lp(n_x + n_y + 1, 1 + n_t)
+    for (i in 1:n_x) {
+      set.row(built.lp, i, c(-XOBS[i], XREF[i, ]))
+    }
+    for (j in 1:n_y) {
+      set.row(built.lp, n_x + j, c(0, YREF[j, ]))
+    }
+    set.row(built.lp, n_x + n_y + 1, c(0, rep(1, n_t)))
+    set.objfn(built.lp, c(1, rep(0, n_t)))
+    set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), "="))
+    set.rhs (built.lp, c(rep(0, n_x), YOBS, 1))
+    set.bounds(built.lp, lower = -Inf, upper = Inf, columns = 1)
   } else {
     if (rts == "nirs") {
-      mat <- rbind(mat_x, mat_y, c(0, rep(1, n_t)))
-      dir <- c(rep("<=", n_x), rep(">=", n_y), "<=")
-      rhs <- c(rep(0, n_x), YOBS, 1)
+      built.lp <- make.lp(n_x + n_y + 1, 1 + n_t)
+      for (i in 1:n_x) {
+        set.row(built.lp, i, c(-XOBS[i], XREF[i, ]))
+      }
+      for (j in 1:n_y) {
+        set.row(built.lp, n_x + j, c(0, YREF[j, ]))
+      }
+      set.row(built.lp, n_x + n_y + 1, c(0, rep(1, n_t)))
+      set.objfn(built.lp, c(1, rep(0, n_t)))
+      set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), "<="))
+      set.rhs (built.lp, c(rep(0, n_x), YOBS, 1))
+      set.bounds(built.lp, lower = -Inf, upper = Inf, columns = 1)
     } else {
       if (rts == "ndrs") {
-        mat <- rbind(mat_x, mat_y, c(0, rep(1, n_t)))
-        dir <- c(rep("<=", n_x), rep(">=", n_y), ">=")
-        rhs <- c(rep(0, n_x), YOBS, 1)
+        built.lp <- make.lp(n_x + n_y + 1, 1 + n_t)
+        for (i in 1:n_x) {
+          set.row(built.lp, i, c(-XOBS[i], XREF[i, ]))
+        }
+        for (j in 1:n_y) {
+          set.row(built.lp, n_x + j, c(0, YREF[j, ]))
+        }
+        set.row(built.lp, n_x + n_y + 1, c(0, rep(1, n_t)))
+        set.objfn(built.lp, c(1, rep(0, n_t)))
+        set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), ">="))
+        set.rhs (built.lp, c(rep(0, n_x), YOBS, 1))
+        set.bounds(built.lp, lower = -Inf, upper = Inf, columns = 1)
       } else {
-        mat <- rbind(mat_x, mat_y)
-        dir <- c(rep("<=", n_x), rep(">=", n_y))
-        rhs <- c(rep(0, n_x), YOBS)
+        built.lp <- make.lp(n_x + n_y, 1 + n_t)
+        for (i in 1:n_x) {
+          set.row(built.lp, i, c(-XOBS[i], XREF[i, ]))
+        }
+        for (j in 1:n_y) {
+          set.row(built.lp, n_x + j, c(0, YREF[j, ]))
+        }
+        set.objfn(built.lp, c(1, rep(0, n_t)))
+        set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y)))
+        set.rhs (built.lp, c(rep(0, n_x), YOBS))
+        set.bounds(built.lp, lower = -Inf, upper = Inf, columns = 1)
       }
     }
   }
-  max <- FALSE
-  bounds <- list(lower = list(ind = 1L, val = -Inf), upper = list(ind = 1L, val = Inf))
-  opt <- Rglpk_solve_LP(obj, mat, dir, rhs, max = max, bounds = bounds)
-  DI <- 1/opt$optimum
+  lp.control(built.lp, sense = "min")
+  solve(built.lp)
+  DI <- 1/get.objective(built.lp)
   DI
 }
 
@@ -346,41 +395,62 @@ DO.ome <- function(XOBS, YOBS, XREF, YREF, PRICESO, rts) {
   n_x <- dim(XREF)[1]
   n_y <- dim(YREF)[1]
   n_t <- dim(XREF)[2]
-  obj <- c(PRICESO/sum(YOBS * PRICESO), rep(0, n_t))
-  mat_x <- if (n_x == 1) {
-    c(rep(0, n_y), XREF)
-  } else {
-    cbind(matrix(0, nrow = n_x, ncol = n_y), XREF)
-  }
-  mat_y <- if (n_y == 1) {
-    c(-1, YREF)
-  } else {
-    cbind(-diag(1, ncol = n_y, nrow = n_y), YREF)
-  }
+  
   if (rts == "vrs") {
-    mat <- rbind(mat_x, mat_y, c(rep(0, n_y), rep(1, n_t)))
-    dir <- c(rep("<=", n_x), rep(">=", n_y), "==")
-    rhs <- c(XOBS, rep(0, n_y), 1)
+    built.lp <- make.lp(n_x + n_y + 1, n_y + n_t)
+    for (i in 1:n_x) {
+      set.row(built.lp, i, c(rep(0, n_y), XREF[i, ]))
+    }
+    for (j in 1:n_y) {
+      set.row(built.lp, n_x + j, c(-diag(1, ncol = n_y, nrow = n_y)[j, ], YREF[j, ]))
+    }
+    set.row(built.lp, n_x + n_y + 1, c(rep(0, n_y), rep(1, n_t)))
+    set.objfn(built.lp, c(PRICESO/sum(YOBS * PRICESO), rep(0, n_t)))
+    set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), "="))
+    set.rhs (built.lp, c(XOBS, rep(0, n_y), 1))
   } else {
     if (rts == "nirs") {
-      mat <- rbind(mat_x, mat_y, c(rep(0, n_y), rep(1, n_t)))
-      dir <- c(rep("<=", n_x), rep(">=", n_y), "<=")
-      rhs <- c(XOBS, rep(0, n_y), 1)
+      built.lp <- make.lp(n_x + n_y + 1, n_y + n_t)
+      for (i in 1:n_x) {
+        set.row(built.lp, i, c(rep(0, n_y), XREF[i, ]))
+      }
+      for (j in 1:n_y) {
+        set.row(built.lp, n_x + j, c(-diag(1, ncol = n_y, nrow = n_y)[j, ], YREF[j, ]))
+      }
+      set.row(built.lp, n_x + n_y + 1, c(rep(0, n_y), rep(1, n_t)))
+      set.objfn(built.lp, c(PRICESO/sum(YOBS * PRICESO), rep(0, n_t)))
+      set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), "<="))
+      set.rhs (built.lp, c(XOBS, rep(0, n_y), 1))
     } else {
       if (rts == "ndrs") {
-        mat <- rbind(mat_x, mat_y, c(rep(0, n_y), rep(1, n_t)))
-        dir <- c(rep("<=", n_x), rep(">=", n_y), ">=")
-        rhs <- c(XOBS, rep(0, n_y), 1)
+        built.lp <- make.lp(n_x + n_y + 1, n_y + n_t)
+        for (i in 1:n_x) {
+          set.row(built.lp, i, c(rep(0, n_y), XREF[i, ]))
+        }
+        for (j in 1:n_y) {
+          set.row(built.lp, n_x + j, c(-diag(1, ncol = n_y, nrow = n_y)[j, ], YREF[j, ]))
+        }
+        set.row(built.lp, n_x + n_y + 1, c(rep(0, n_y), rep(1, n_t)))
+        set.objfn(built.lp, c(PRICESO/sum(YOBS * PRICESO), rep(0, n_t)))
+        set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), ">="))
+        set.rhs (built.lp, c(XOBS, rep(0, n_y), 1))
       } else {
-        mat <- rbind(mat_x, mat_y)
-        dir <- c(rep("<=", n_x), rep(">=", n_y))
-        rhs <- c(XOBS, rep(0, n_y))
+        built.lp <- make.lp(n_x + n_y, n_y + n_t)
+        for (i in 1:n_x) {
+          set.row(built.lp, i, c(rep(0, n_y), XREF[i, ]))
+        }
+        for (j in 1:n_y) {
+          set.row(built.lp, n_x + j, c(-diag(1, ncol = n_y, nrow = n_y)[j, ], YREF[j, ]))
+        }
+        set.objfn(built.lp, c(PRICESO/sum(YOBS * PRICESO), rep(0, n_t)))
+        set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y)))
+        set.rhs (built.lp, c(XOBS, rep(0, n_y)))
       }
     }
   }
-  max <- TRUE
-  opt <- Rglpk_solve_LP(obj, mat, dir, rhs, max = max)
-  DO.ome <- 1/opt$optimum
+  lp.control(built.lp, sense = "max")
+  solve(built.lp)
+  DO.ome <- 1/get.objective(built.lp)
   DO.ome
 }
 
@@ -388,41 +458,62 @@ DI.ime <- function(XOBS, YOBS, XREF, YREF, PRICESI, rts) {
   n_x <- dim(XREF)[1]
   n_y <- dim(YREF)[1]
   n_t <- dim(XREF)[2]
-  obj <- c(PRICESI/sum(XOBS * PRICESI), rep(0, n_t))
-  mat_x <- if (n_x == 1) {
-    c(-1, XREF)
-  } else {
-    cbind(-diag(1, nrow = n_x, ncol = n_x), XREF)
-  }
-  mat_y <- if (n_y == 1) {
-    c(rep(0, n_x), YREF)
-  } else {
-    cbind(matrix(0, nrow = n_y, ncol = n_x), YREF)
-  }
+
   if (rts == "vrs") {
-    mat <- rbind(mat_x, mat_y, c(rep(0, n_x), rep(1, n_t)))
-    dir <- c(rep("<=", n_x), rep(">=", n_y), "==")
-    rhs <- c(rep(0, n_x), YOBS, 1)
+    built.lp <- make.lp(n_x + n_y + 1, n_x + n_t)
+    for (i in 1:n_x) {
+      set.row(built.lp, i, c(-diag(1, nrow = n_x, ncol = n_x)[i, ], XREF[i, ]))
+    }
+    for (j in 1:n_y) {
+      set.row(built.lp, n_x + j, c(rep(0, n_x), YREF[j, ]))
+    }
+    set.row(built.lp, n_x + n_y + 1, c(rep(0, n_x), rep(1, n_t)))
+    set.objfn(built.lp, c(PRICESI/sum(XOBS * PRICESI), rep(0, n_t)))
+    set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), "="))
+    set.rhs (built.lp, c(rep(0, n_x), YOBS, 1))
   } else {
     if (rts == "nirs") {
-      mat <- rbind(mat_x, mat_y, c(rep(0, n_x), rep(1, n_t)))
-      dir <- c(rep("<=", n_x), rep(">=", n_y), "<=")
-      rhs <- c(rep(0, n_x), YOBS, 1)
+      built.lp <- make.lp(n_x + n_y + 1, n_x + n_t)
+      for (i in 1:n_x) {
+        set.row(built.lp, i, c(-diag(1, nrow = n_x, ncol = n_x)[i, ], XREF[i, ]))
+      }
+      for (j in 1:n_y) {
+        set.row(built.lp, n_x + j, c(rep(0, n_x), YREF[j, ]))
+      }
+      set.row(built.lp, n_x + n_y + 1, c(rep(0, n_x), rep(1, n_t)))
+      set.objfn(built.lp, c(PRICESI/sum(XOBS * PRICESI), rep(0, n_t)))
+      set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), "<="))
+      set.rhs (built.lp, c(rep(0, n_x), YOBS, 1))
     } else {
       if (rts == "ndrs") {
-        mat <- rbind(mat_x, mat_y, c(rep(0, n_x), rep(1, n_t)))
-        dir <- c(rep("<=", n_x), rep(">=", n_y), ">=")
-        rhs <- c(rep(0, n_x), YOBS, 1)
+        built.lp <- make.lp(n_x + n_y + 1, n_x + n_t)
+        for (i in 1:n_x) {
+          set.row(built.lp, i, c(-diag(1, nrow = n_x, ncol = n_x)[i, ], XREF[i, ]))
+        }
+        for (j in 1:n_y) {
+          set.row(built.lp, n_x + j, c(rep(0, n_x), YREF[j, ]))
+        }
+        set.row(built.lp, n_x + n_y + 1, c(rep(0, n_x), rep(1, n_t)))
+        set.objfn(built.lp, c(PRICESI/sum(XOBS * PRICESI), rep(0, n_t)))
+        set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), ">="))
+        set.rhs (built.lp, c(rep(0, n_x), YOBS, 1))
       } else {
-        mat <- rbind(mat_x, mat_y)
-        dir <- c(rep("<=", n_x), rep(">=", n_y))
-        rhs <- c(rep(0, n_x), YOBS)
+        built.lp <- make.lp(n_x + n_y , n_x + n_t)
+        for (i in 1:n_x) {
+          set.row(built.lp, i, c(-diag(1, nrow = n_x, ncol = n_x)[i, ], XREF[i, ]))
+        }
+        for (j in 1:n_y) {
+          set.row(built.lp, n_x + j, c(rep(0, n_x), YREF[j, ]))
+        }
+        set.objfn(built.lp, c(PRICESI/sum(XOBS * PRICESI), rep(0, n_t)))
+        set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y)))
+        set.rhs (built.lp, c(rep(0, n_x), YOBS))
       }
     }
   }
-  max <- FALSE
-  opt <- Rglpk_solve_LP(obj, mat, dir, rhs, max = max)
-  DI.ime <- 1/opt$optimum
+  lp.control(built.lp, sense = "min")
+  solve(built.lp)
+  DI.ime <- 1/get.objective(built.lp)
   DI.ime
 }
 
@@ -430,46 +521,66 @@ D.tfp <- function(XOBS, YOBS, XREF, YREF, PRICESO, PRICESI, rts) {
   n_x <- dim(XREF)[1]
   n_y <- dim(YREF)[1]
   n_t <- dim(XREF)[2]
-  obj <- c(PRICESO, rep(0, n_x), rep(0, n_t), 0)
-  mat_x <- if (n_x == 1) {
-    c(rep(0, n_y), -1, XREF, 0)
-  } else {
-    cbind(matrix(0, nrow = n_x, ncol = n_y), diag(-1, nrow = n_x, ncol = n_x), XREF, matrix(0, 
-      nrow = n_x, ncol = 1))
-  }
-  mat_y <- if (n_y == 1) {
-    c(-1, rep(0, n_x), YREF, 0)
-  } else {
-    cbind(diag(-1, ncol = n_y, nrow = n_y), matrix(0, nrow = n_y, ncol = n_x), YREF, matrix(0, 
-      nrow = n_y, ncol = 1))
-  }
+  
   if (rts == "vrs") {
-    mat <- rbind(mat_x, mat_y, c(rep(0, n_y), PRICESI, rep(0, n_t + 1)), c(rep(0, n_x + 
-      n_y), rep(1, n_t), -1))
-    dir <- c(rep("<=", n_x), rep(">=", n_y), "==", "==")
-    rhs <- c(rep(0, n_x), rep(0, n_y), 1, 0)
+    built.lp <- make.lp(n_x + n_y + 2, n_y + n_x + n_t + 1)
+    for (i in 1:n_x) {
+      set.row(built.lp, i, c(rep(0, n_y), diag(-1, nrow = n_x, ncol = n_x)[i, ], XREF[i, ], 0))
+    }
+    for (j in 1:n_y) {
+      set.row(built.lp, n_x + j, c(diag(-1, ncol = n_y, nrow = n_y)[j, ], rep(0, n_x), YREF[j, ], 0))
+    }
+    set.row(built.lp, n_x + n_y + 1, c(rep(0, n_y), PRICESI, rep(0, n_t + 1)))
+    set.row(built.lp, n_x + n_y + 2, c(rep(0, n_x + n_y), rep(1, n_t), -1))
+    set.objfn(built.lp, c(PRICESO, rep(0, n_x), rep(0, n_t), 0))
+    set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), "=", "="))
+    set.rhs (built.lp, c(rep(0, n_x), rep(0, n_y), 1, 0))
   } else {
     if (rts == "nirs") {
-      mat <- rbind(mat_x, mat_y, c(rep(0, n_y), PRICESI, rep(0, n_t + 1)), c(rep(0, n_x + 
-        n_y), rep(1, n_t), -1))
-      dir <- c(rep("<=", n_x), rep(">=", n_y), "==", "<=")
-      rhs <- c(rep(0, n_x), rep(0, n_y), 1, 0)
+      built.lp <- make.lp(n_x + n_y + 2, n_y + n_x + n_t + 1)
+      for (i in 1:n_x) {
+        set.row(built.lp, i, c(rep(0, n_y), diag(-1, nrow = n_x, ncol = n_x)[i, ], XREF[i, ], 0))
+      }
+      for (j in 1:n_y) {
+        set.row(built.lp, n_x + j, c(diag(-1, ncol = n_y, nrow = n_y)[j, ], rep(0, n_x), YREF[j, ], 0))
+      }
+      set.row(built.lp, n_x + n_y + 1, c(rep(0, n_y), PRICESI, rep(0, n_t + 1)))
+      set.row(built.lp, n_x + n_y + 2, c(rep(0, n_x + n_y), rep(1, n_t), -1))
+      set.objfn(built.lp, c(PRICESO, rep(0, n_x), rep(0, n_t), 0))
+      set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), "=", "<="))
+      set.rhs (built.lp, c(rep(0, n_x), rep(0, n_y), 1, 0))
     } else {
       if (rts == "ndrs") {
-        mat <- rbind(mat_x, mat_y, c(rep(0, n_y), PRICESI, rep(0, n_t + 1)), c(rep(0, 
-          n_x + n_y), rep(1, n_t), -1))
-        dir <- c(rep("<=", n_x), rep(">=", n_y), "==", ">=")
-        rhs <- c(rep(0, n_x), rep(0, n_y), 1, 0)
+        built.lp <- make.lp(n_x + n_y + 2, n_y + n_x + n_t + 1)
+        for (i in 1:n_x) {
+          set.row(built.lp, i, c(rep(0, n_y), diag(-1, nrow = n_x, ncol = n_x)[i, ], XREF[i, ], 0))
+        }
+        for (j in 1:n_y) {
+          set.row(built.lp, n_x + j, c(diag(-1, ncol = n_y, nrow = n_y)[j, ], rep(0, n_x), YREF[j, ], 0))
+        }
+        set.row(built.lp, n_x + n_y + 1, c(rep(0, n_y), PRICESI, rep(0, n_t + 1)))
+        set.row(built.lp, n_x + n_y + 2, c(rep(0, n_x + n_y), rep(1, n_t), -1))
+        set.objfn(built.lp, c(PRICESO, rep(0, n_x), rep(0, n_t), 0))
+        set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), "=", ">="))
+        set.rhs (built.lp, c(rep(0, n_x), rep(0, n_y), 1, 0))
       } else {
-        mat <- rbind(mat_x, mat_y, c(rep(0, n_y), PRICESI, rep(0, n_t + 1)))
-        dir <- c(rep("<=", n_x), rep(">=", n_y), "==")
-        rhs <- c(rep(0, n_x), rep(0, n_y), 1)
+        built.lp <- make.lp(n_x + n_y + 1, n_y + n_x + n_t + 1)
+        for (i in 1:n_x) {
+          set.row(built.lp, i, c(rep(0, n_y), diag(-1, nrow = n_x, ncol = n_x)[i, ], XREF[i, ], 0))
+        }
+        for (j in 1:n_y) {
+          set.row(built.lp, n_x + j, c(diag(-1, ncol = n_y, nrow = n_y)[j, ], rep(0, n_x), YREF[j, ], 0))
+        }
+        set.row(built.lp, n_x + n_y + 1, c(rep(0, n_y), PRICESI, rep(0, n_t + 1)))
+        set.objfn(built.lp, c(PRICESO, rep(0, n_x), rep(0, n_t), 0))
+        set.constr.type(built.lp, c(rep("<=", n_x), rep(">=", n_y), "="))
+        set.rhs (built.lp, c(rep(0, n_x), rep(0, n_y), 1))
       }
     }
   }
-  max <- TRUE
-  opt <- Rglpk_solve_LP(obj, mat, dir, rhs, max = max)
-  tfp <- opt$optimum
+  lp.control(built.lp, sense = "max")
+  solve(built.lp)
+  tfp <- get.objective(built.lp)
   tfp
 }  #XOBS and YOBS are not actually useful for this computation. We keep it for the form
 
@@ -480,49 +591,67 @@ DO.shdu <- function(XOBS, YOBS, XREF, YREF, rts) {
   n_y <- dim(YREF)[1]
   n_t <- dim(XREF)[2]
   if (rts == "vrs") {
-    objo <- c(rep(0, n_y), XOBS, 1)
-    mato <- rbind(cbind(-t(YREF), t(XREF), matrix(1, nrow = n_t, ncol = 1)), c(YOBS, rep(0, 
-      n_x), 0))
-    diro <- c(rep(">=", n_t), "==")
-    rhso <- c(rep(0, n_t), 1)
-    maxo <- FALSE
-    boundso <- list(lower = list(ind = (n_y + n_x + 1), val = -Inf), upper = list(ind = (n_y + 
-      n_x + 1), val = Inf))
-    opto <- Rglpk_solve_LP(obj = objo, mat = mato, dir = diro, rhs = rhso, max = maxo, 
-      bounds = boundso)
-    prices_o <- opto$solution[1:n_y]/(sum(opto$solution[(1 + n_y):(n_y + n_x)] * XOBS) + 
-      opto$solution[n_y + n_x + 1])
+    built.lp <- make.lp(n_t + 1, n_y + n_x + 1)
+    for (i in 1:n_y) {
+      set.column(built.lp, i, c(-YREF[i, ], YOBS[i]))
+    }
+    for (j in 1:n_x) {
+      set.column(built.lp, n_y + j, c(XREF[j, ], 0))
+    }
+    set.column(built.lp, n_x + n_y + 1, c(rep(1, n_t), 0))
+    set.objfn(built.lp, c(rep(0, n_y), XOBS, 1))
+    set.constr.type(built.lp, c(rep(">=", n_t), "="))
+    set.rhs (built.lp, c(rep(0, n_t), 1))
+    set.bounds(built.lp, lower = -Inf, upper = Inf, columns = n_x + n_y + 1)
+    lp.control(built.lp, sense = "min")
+    solve(built.lp)
+    prices_o <- get.variables(built.lp)[1:n_y]/(sum(get.variables(built.lp)[(1 + n_y):(n_y + n_x)] * XOBS) + get.variables(built.lp)[n_y + n_x + 1])
   } else {
     if (rts == "nirs") {
-      objo <- c(rep(0, n_y), XOBS, 1)
-      mato <- rbind(cbind(-t(YREF), t(XREF), matrix(1, nrow = n_t, ncol = 1)), c(YOBS, 
-        rep(0, n_x), 0))
-      diro <- c(rep(">=", n_t), "==")
-      rhso <- c(rep(0, n_t), 1)
-      maxo <- FALSE
-      opto <- Rglpk_solve_LP(obj = objo, mat = mato, dir = diro, rhs = rhso, max = maxo)
-      prices_o <- opto$solution[1:n_y]/(sum(opto$solution[(1 + n_y):(n_y + n_x)] * XOBS) + 
-        opto$solution[n_y + n_x + 1])
+      built.lp <- make.lp(n_t + 1, n_y + n_x + 1)
+      for (i in 1:n_y) {
+        set.column(built.lp, i, c(-YREF[i, ], YOBS[i]))
+      }
+      for (j in 1:n_x) {
+        set.column(built.lp, n_y + j, c(XREF[j, ], 0))
+      }
+      set.column(built.lp, n_x + n_y + 1, c(rep(1, n_t), 0))
+      set.objfn(built.lp, c(rep(0, n_y), XOBS, 1))
+      set.constr.type(built.lp, c(rep(">=", n_t), "="))
+      set.rhs (built.lp, c(rep(0, n_t), 1))
+      lp.control(built.lp, sense = "min")
+      solve(built.lp)
+      prices_o <- get.variables(built.lp)[1:n_y]/(sum(get.variables(built.lp)[(1 + n_y):(n_y + n_x)] * XOBS) + get.variables(built.lp)[n_y + n_x + 1])
     } else {
       if (rts == "ndrs") {
-        objo <- c(rep(0, n_y), XOBS, -1)
-        mato <- rbind(cbind(-t(YREF), t(XREF), matrix(-1, nrow = n_t, ncol = 1)), c(YOBS, 
-          rep(0, n_x), 0))
-        diro <- c(rep(">=", n_t), "==")
-        rhso <- c(rep(0, n_t), 1)
-        maxo <- FALSE
-        opto <- Rglpk_solve_LP(obj = objo, mat = mato, dir = diro, rhs = rhso, max = maxo)
-        prices_o <- opto$solution[1:n_y]/(sum(opto$solution[(1 + n_y):(n_y + n_x)] * 
-          XOBS) - opto$solution[n_y + n_x + 1])
+        built.lp <- make.lp(n_t + 1, n_y + n_x + 1)
+        for (i in 1:n_y) {
+          set.column(built.lp, i, c(-YREF[i, ], YOBS[i]))
+        }
+        for (j in 1:n_x) {
+          set.column(built.lp, n_y + j, c(XREF[j, ], 0))
+        }
+        set.column(built.lp, n_x + n_y + 1, c(rep(-1, n_t), 0))
+        set.objfn(built.lp, c(rep(0, n_y), XOBS, -1))
+        set.constr.type(built.lp, c(rep(">=", n_t), "="))
+        set.rhs (built.lp, c(rep(0, n_t), 1))
+        lp.control(built.lp, sense = "min")
+        solve(built.lp)
+        prices_o <- get.variables(built.lp)[1:n_y]/(sum(get.variables(built.lp)[(1 + n_y):(n_y + n_x)] * XOBS) - get.variables(built.lp)[n_y + n_x + 1])
       } else {
-        objo <- c(rep(0, n_y), XOBS)
-        mato <- rbind(cbind(-t(YREF), t(XREF)), c(YOBS, rep(0, n_x)))
-        diro <- c(rep(">=", n_t), "==")
-        rhso <- c(rep(0, n_t), 1)
-        maxo <- FALSE
-        opto <- Rglpk_solve_LP(obj = objo, mat = mato, dir = diro, rhs = rhso, max = maxo)
-        prices_o <- opto$solution[1:n_y]/(sum(opto$solution[(1 + n_y):(n_y + n_x)] * 
-          XOBS))
+        built.lp <- make.lp(n_t + 1, n_y + n_x)
+        for (i in 1:n_y) {
+          set.column(built.lp, i, c(-YREF[i, ], YOBS[i]))
+        }
+        for (j in 1:n_x) {
+          set.column(built.lp, n_y + j, c(XREF[j, ], 0))
+        }
+        set.objfn(built.lp, c(rep(0, n_y), XOBS))
+        set.constr.type(built.lp, c(rep(">=", n_t), "="))
+        set.rhs (built.lp, c(rep(0, n_t), 1))
+        lp.control(built.lp, sense = "min", improve = "bbsimplex")
+        solve(built.lp)
+        prices_o <- get.variables(built.lp)[1:n_y]/(sum(get.variables(built.lp)[(1 + n_y):(n_y + n_x)] * XOBS))
       }
     }
   }
@@ -537,48 +666,70 @@ DI.shdu <- function(XOBS, YOBS, XREF, YREF, rts) {
   n_y <- dim(YREF)[1]
   n_t <- dim(XREF)[2]
   if (rts == "vrs") {
-    obji <- c(YOBS, rep(0, n_x), 1)
-    mati <- rbind(cbind(t(YREF), -t(XREF), matrix(1, nrow = n_t, ncol = 1)), c(rep(0, n_y), 
-      XOBS, 0))
-    diri <- c(rep("<=", n_t), "==")
-    rhsi <- c(rep(0, n_t), 1)
-    maxi <- TRUE
-    boundsi <- list(lower = list(ind = (n_y + n_x + 1), val = -Inf), upper = list(ind = (n_y + 
-      n_x + 1), val = Inf))
-    opti <- Rglpk_solve_LP(obj = obji, mat = mati, dir = diri, rhs = rhsi, max = maxi, 
-      bounds = boundsi)
-    prices_i <- opti$solution[(n_y + 1):(n_y + n_x)]/(sum(opti$solution[1:n_y] * YOBS) + 
-      opti$solution[n_x + n_y + 1])
+    built.lp <- make.lp(n_t + 1, n_y + n_x + 1)
+    for (i in 1:n_y) {
+      set.column(built.lp, i, c(YREF[i, ], 0))
+    }
+    for (j in 1:n_x) {
+      set.column(built.lp, n_y + j, c(-XREF[j, ], XOBS[j]))
+    }
+    set.column(built.lp, n_x + n_y + 1, c(rep(1, n_t), 0))
+    set.objfn(built.lp, c(YOBS, rep(0, n_x), 1))
+    set.constr.type(built.lp, c(rep("<=", n_t), "="))
+    set.rhs (built.lp, c(rep(0, n_t), 1))
+    set.bounds(built.lp, lower = -Inf, upper = Inf, columns = n_x + n_y + 1)
+    lp.control(built.lp, sense = "max")
+    solve(built.lp)
+    prices_i <- get.variables(built.lp)[(n_y + 1):(n_y + n_x)]/(sum(get.variables(built.lp)[1:n_y] * YOBS) + 
+                get.variables(built.lp)[n_x + n_y + 1])
   } else {
     if (rts == "nirs") {
-      obji <- c(YOBS, rep(0, n_x), -1)
-      mati <- rbind(cbind(t(YREF), -t(XREF), matrix(-1, nrow = n_t, ncol = 1)), c(rep(0, 
-        n_y), XOBS, 0))
-      diri <- c(rep("<=", n_t), "==")
-      rhsi <- c(rep(0, n_t), 1)
-      maxi <- TRUE
-      opti <- Rglpk_solve_LP(obj = obji, mat = mati, dir = diri, rhs = rhsi, max = maxi)
-      prices_i <- opti$solution[(n_y + 1):(n_y + n_x)]/(sum(opti$solution[1:n_y] * YOBS) - 
-        opti$solution[n_x + n_y + 1])
+      built.lp <- make.lp(n_t + 1, n_y + n_x + 1)
+      for (i in 1:n_y) {
+        set.column(built.lp, i, c(YREF[i, ], 0))
+      }
+      for (j in 1:n_x) {
+        set.column(built.lp, n_y + j, c(-XREF[j, ], XOBS[j]))
+      }
+      set.column(built.lp, n_x + n_y + 1, c(rep(-1, n_t), 0))
+      set.objfn(built.lp, c(YOBS, rep(0, n_x), -1))
+      set.constr.type(built.lp, c(rep("<=", n_t), "="))
+      set.rhs (built.lp, c(rep(0, n_t), 1))
+      lp.control(built.lp, sense = "max")
+      solve(built.lp)
+      prices_i <- get.variables(built.lp)[(n_y + 1):(n_y + n_x)]/(sum(get.variables(built.lp)[1:n_y] * YOBS) - 
+                  get.variables(built.lp)[n_x + n_y + 1])
     } else {
       if (rts == "ndrs") {
-        obji <- c(YOBS, rep(0, n_x), 1)
-        mati <- rbind(cbind(t(YREF), -t(XREF), matrix(1, nrow = n_t, ncol = 1)), c(rep(0, 
-          n_y), XOBS, 0))
-        diri <- c(rep("<=", n_t), "==")
-        rhsi <- c(rep(0, n_t), 1)
-        maxi <- TRUE
-        opti <- Rglpk_solve_LP(obj = obji, mat = mati, dir = diri, rhs = rhsi, max = maxi)
-        prices_i <- opti$solution[(n_y + 1):(n_y + n_x)]/(sum(opti$solution[1:n_y] * 
-          YOBS) + opti$solution[n_x + n_y + 1])
+        built.lp <- make.lp(n_t + 1, n_y + n_x + 1)
+        for (i in 1:n_y) {
+          set.column(built.lp, i, c(YREF[i, ], 0))
+        }
+        for (j in 1:n_x) {
+          set.column(built.lp, n_y + j, c(-XREF[j, ], XOBS[j]))
+        }
+        set.column(built.lp, n_x + n_y + 1, c(rep(1, n_t), 0))
+        set.objfn(built.lp, c(YOBS, rep(0, n_x), 1))
+        set.constr.type(built.lp, c(rep("<=", n_t), "="))
+        set.rhs (built.lp, c(rep(0, n_t), 1))
+        lp.control(built.lp, sense = "max")
+        solve(built.lp)
+        prices_i <- get.variables(built.lp)[(n_y + 1):(n_y + n_x)]/(sum(get.variables(built.lp)[1:n_y] * 
+          YOBS) + get.variables(built.lp)[n_x + n_y + 1])
       } else {
-        obji <- c(YOBS, rep(0, n_x))
-        mati <- rbind(cbind(t(YREF), -t(XREF)), c(rep(0, n_y), XOBS))
-        diri <- c(rep("<=", n_t), "==")
-        rhsi <- c(rep(0, n_t), 1)
-        maxi <- TRUE
-        opti <- Rglpk_solve_LP(obj = obji, mat = mati, dir = diri, rhs = rhsi, max = maxi)
-        prices_i <- opti$solution[(n_y + 1):(n_y + n_x)]/(sum(opti$solution[1:n_y] * 
+        built.lp <- make.lp(n_t + 1, n_y + n_x)
+        for (i in 1:n_y) {
+          set.column(built.lp, i, c(YREF[i, ], 0))
+        }
+        for (j in 1:n_x) {
+          set.column(built.lp, n_y + j, c(-XREF[j, ], XOBS[j]))
+        }
+        set.objfn(built.lp, c(YOBS, rep(0, n_x)))
+        set.constr.type(built.lp, c(rep("<=", n_t), "="))
+        set.rhs (built.lp, c(rep(0, n_t), 1))
+        lp.control(built.lp, sense = "max")
+        solve(built.lp)
+        prices_i <- get.variables(built.lp)[(n_y + 1):(n_y + n_x)]/(sum(get.variables(built.lp)[1:n_y] * 
           YOBS))
       }
     }
@@ -619,14 +770,14 @@ balanced <- function(data, id.var, time.var) {
 
 ## Return functions (i.e. Levels(); Changes(); Shadowp())
 Levels <- function(object, ...) {
-    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Malmquist", "Paasche", "MalmquistMS", "MalmquistNT", "HicksMoorsteen"))) {
+    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Malmquist", "Paasche", "HicksMoorsteen"))) {
         stop("Function 'Levels' can not be applied to an object of class \"", class(object), "\"")
     }
     return(object$Levels)
 }
 
 Changes <- function(object, ...) {
-    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Malmquist", "Paasche", "MalmquistMS", "MalmquistNT", "HicksMoorsteen"))) {
+    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Malmquist", "Paasche", "HicksMoorsteen"))) {
         stop("Function 'Changes' can not be applied to an object of class \"", class(object), "\"")
     }
     return(object$Changes)
@@ -636,8 +787,12 @@ Shadowp <- function(object, ...) {
     if (is(object, c("Malmquist"))) {
         stop("Function 'Shadowp' can not be applied to an object of class \"", class(object)[2], "\"")
     }
-    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Paasche", "MalmquistMS", "MalmquistNT", "HicksMoorsteen"))) {
+    if (!is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Paasche", "HicksMoorsteen"))) {
         stop("Function 'Shadowp' can not be applied to an object of class \"", class(object), "\"")
+    }
+    if (is.null(object$Shadowp)) {
+        stop("No shadow prices are returned in you \"", class(object)[2], "\"", " object. 
+Specifying 'shadow = TRUE' should be considered in the function generating the \"", class(object)[2], "\"", " object.")
     }
     return(object$Shadowp)
 }

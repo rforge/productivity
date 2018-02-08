@@ -1,6 +1,6 @@
 ## Fisher with technical change
 
-fish.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation, parallel, scaled) {
+fish.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation, parallel, scaled, itt, it) {
   ## period (Xt1, Yt1)
   X1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
   Y1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
@@ -63,13 +63,10 @@ fish.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientati
   }
   
   res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), 
-    .combine = rbind, .packages = c("Rglpk")) %dopar% {
-      if (parallel == FALSE) {
-        cat("\r")
-        cat('Progress:', ano/length(year.vec)*100, '%', '\r')
-        flush.console()
-        if(ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == 
-        year.vec[ano], step1$id.var])) cat('DONE!               \n\r')
+    .combine = rbind, .packages = c("lpSolveAPI")) %dopar% {
+    if (parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
+      cat(nextElem(it))
+      flush.console()
       }
     P.Qt <- sum(P1[, dmu] * Y1[, dmu])
     P.Qs <- sum(P1[, dmu] * Y2[, dmu])
@@ -153,8 +150,7 @@ fish.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientati
         W <- COST/AI
         TT <- P/W
         
-        ITE2 <- 1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, 
-          rts)
+        ITE2 <- 1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, rts)
         ISE2 <- (1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, 
           rts = "crs"))/ITE2
         CE2 <- sqrt((1/DI.ime(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, 
@@ -212,8 +208,7 @@ fish.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientati
         OSME2 <- RAE2 * ROSE2
         RME2 <- TFPE2/OTE2/OSE2
         
-        ITE2 <- 1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, 
-          rts)
+        ITE2 <- 1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, rts)
         ISE2 <- (1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, 
           rts = "crs"))/ITE2
         CE2 <- sqrt((1/DI.ime(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, 
@@ -247,7 +242,7 @@ fish.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientati
 
 ## Fisher without technical change
 
-fish.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parallel, scaled) {
+fish.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parallel, scaled, itt, it) {
   ## period (Xt1, Yt1)
   X1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
   Y1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
@@ -289,13 +284,10 @@ fish.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parall
   YREFs <- t(as.matrix(data[, step1$y.vars]))
   
   res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), 
-    .combine = rbind, .packages = c("Rglpk")) %dopar% {
-      if (parallel == FALSE) {
-        cat("\r")
-        cat('Progress:', ano/length(year.vec)*100, '%', '\r')
-        flush.console()
-        if(ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == 
-        year.vec[ano], step1$id.var])) cat('DONE!               \n\r')
+    .combine = rbind, .packages = c("lpSolveAPI")) %dopar% {
+    if (parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
+      cat(nextElem(it))
+      flush.console()
       }
     P.Qt <- sum(P1[, dmu] * Y1[, dmu])
     P.Qs <- sum(P1[, dmu] * Y2[, dmu])
@@ -380,8 +372,7 @@ fish.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parall
         W <- COST/AI
         TT <- P/W
         
-        ITE2 <- 1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, 
-          rts)
+        ITE2 <- 1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, rts)
         ISE2 <- (1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, 
           rts = "crs"))/ITE2
         CE2 <- sqrt((1/DI.ime(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, 
@@ -439,8 +430,7 @@ fish.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parall
         OSME2 <- RAE2 * ROSE2
         RME2 <- TFPE2/OTE2/OSE2
         
-        ITE2 <- 1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, 
-          rts)
+        ITE2 <- 1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, rts)
         ISE2 <- (1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, 
           rts = "crs"))/ITE2
         CE2 <- sqrt((1/DI.ime(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, 
@@ -473,15 +463,17 @@ fish.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parall
 
 ### Fisher, print fonction
 print.Fisher <- function(x, digits = NULL, ...) {
-    if (is.null(digits)) {
-        digits <- max(3, getOption("digits") - 3)
-    }
-    cat("\nFisher productivity and profitability levels (summary):\n\n")
-    print(summary(x[["Levels"]], digits = digits), digits = digits)
-    cat("\n\nFisher productivity and profitability changes (summary):\n\n")
-    print(summary(x[["Changes"]], digits = digits), digits = digits)
+  if (is.null(digits)) {
+    digits <- max(3, getOption("digits") - 3)
+  }
+  cat("\nFisher productivity and profitability levels (summary):\n\n")
+  print(summary(x[["Levels"]][-c(1:2)], digits = digits), digits = digits)
+  cat("\n\nFisher productivity and profitability changes (summary):\n\n")
+  print(summary(x[["Changes"]][-c(1:2)], digits = digits), digits = digits)
+  if (!is.null(x[["Shadowp"]])) {
     cat("\n\nFisher productivity shadow prices (summary):\n\n")
-    print(summary(x[["Shadowp"]], digits = digits), digits = digits)
-    cat("\n")
-    invisible(x)
+    print(summary(x[["Shadowp"]][-c(1:2)], digits = digits), digits = digits)
+    }
+  cat("\n")
+  invisible(x)
 }

@@ -18,24 +18,28 @@ cores = max(1, detectCores() - 1), scaled = FALSE) {
     stop("Unknown orientation: ", paste(orientation), call. = FALSE)
   if (scaled == FALSE) {
     if (any(data[, c(step1$x.vars, step1$y.vars)] >= 1e+05 | data[, c(step1$x.vars, step1$y.vars)] <= 1e-04)) 
-      warning("Some quantity variables are not between 1e-4 and 1e5. We recommend rescaling the data 
-or set the scaled option to TRUE to avoid numerical problems\n\r", call. = FALSE)
+      warning("Some quantity variables are not between 1e-4 and 1e5. 
+  We recommend rescaling the data or set the scaled option to TRUE to avoid numerical problems\n\r", call. = FALSE)
   } else {
     data[, c(step1$x.vars, step1$y.vars)] <- apply(data[, c(step1$x.vars, step1$y.vars)], 
       2, FUN = function(x) x/mean(x))
   }
-  if (parallel == TRUE) {
-    if (cores == 1) {
-      registerDoSEQ()
-    } else {
+  
+  pas <- 5
+  it <- iter(c(paste0("\rProgress: ", seq(0,100-pas,pas), "%\r"), "DONE!        \r\n\r"))
+  itt <- round(seq(1, nrow(data) - length(levels(as.factor(usagri[,id.var]))), (nrow(data) - length(levels(as.factor(usagri[,id.var]))))/(100/pas)),0)
+  itt[(100/pas)+1L] <- nrow(data) - length(levels(as.factor(usagri[,id.var])))
+  
+  if (parallel == TRUE & cores == 1) { parallel <- FALSE }
+  if (parallel == TRUE & cores > 1) {
       registerDoParallel(cores = cores)
-    }
-  } else {
+    } else {
     registerDoSEQ()
-  }
-  res_malm_loop <- foreach(ano = 1:(length(year.vec) - 1), .combine = rbind, .packages = c("Rglpk", 
+    }
+  
+  res_malm_loop <- foreach(ano = 1:(length(year.vec) - 1), .combine = rbind, .packages = c("lpSolveAPI", 
     "doParallel"), .export = c("malm.1", "DO.sh", "DI.sh")) %dopar% {
-    malm.1(data, step1, ano, year.vec, tech.reg, rts, orientation, parallel)
+    malm.1(data, step1, ano, year.vec, tech.reg, rts, orientation, parallel, itt, it)
   }
   registerDoSEQ()
   stopImplicitCluster()

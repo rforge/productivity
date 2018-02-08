@@ -1,6 +1,6 @@
 ## Lowe auxiliary functions first step lowe (with technical change)
 
-lo.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation, parallel, scaled, PRICESO, PRICESI) {
+lo.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation, parallel, scaled, PRICESO, PRICESI, itt, it) {
   X1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
   Y1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
   if (tech.reg == TRUE) {
@@ -19,15 +19,13 @@ lo.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation
     Y.ini <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
     X.ini <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
   }
+  
   res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), .combine = rbind, 
-    .packages = c("Rglpk")) %dopar% {
-    if (parallel == FALSE) {
-      cat("\r")
-      cat("Progress:", ano/length(year.vec) * 100, "%", "\r")
+    .packages = c("lpSolveAPI")) %dopar% {
+    if (parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
+      cat(nextElem(it))
       flush.console()
-      if (ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == year.vec[ano], step1$id.var])) 
-        cat("DONE!               \n\r")
-    }
+      }
     AO <- sum(PRICESO * Y1[, dmu])
     AI <- sum(PRICESI * X1[, dmu])
     TFP <- AO/AI
@@ -109,7 +107,7 @@ lo.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation
 }
 
 # first step lowe (without technical change)
-lo.2 <- function(data, data.in, step1, rts, orientation, parallel, scaled, PRICESO, PRICESI) {
+lo.2 <- function(data, data.in, step1, rts, orientation, parallel, scaled, PRICESO, PRICESI, itt, it) {
   X1 <- t(as.matrix(data[, step1$x.vars]))
   Y1 <- t(as.matrix(data[, step1$y.vars]))
   XREF1 <- X1
@@ -123,15 +121,12 @@ lo.2 <- function(data, data.in, step1, rts, orientation, parallel, scaled, PRICE
     Y.ini <- t(as.matrix(data[, step1$y.vars]))
     X.ini <- t(as.matrix(data[, step1$x.vars]))
   }
-  res2 <- foreach(dmu = 1:length(data[, step1$id.var]), .combine = rbind, .packages = c("Rglpk"), .export = c("DO.sh", 
-    "DI.sh", "DO.ome", "DI.ime", "D.tfp", "DO.shdu", "DI.shdu")) %dopar% {
-    if (parallel == FALSE) {
-      cat("\r")
-      cat("Progress:", round(dmu/length(data[, step1$id.var]) * 100, 0), "%", "\r")
+  res2 <- foreach(dmu = 1:length(data[, step1$id.var]), .combine = rbind, .packages = c("lpSolveAPI"), 
+    .export = c("DO.sh", "DI.sh", "DO.ome", "DI.ime", "D.tfp", "DO.shdu", "DI.shdu")) %dopar% {
+    if (parallel == FALSE & dmu %in% itt) {
+      cat(nextElem(it))
       flush.console()
-      if (dmu == length(data[, step1$id.var])) 
-        cat("DONE!               \n\r")
-    }
+      }
     AO <- sum(PRICESO * Y1[, dmu])
     AI <- sum(PRICESI * X1[, dmu])
     TFP <- AO/AI
@@ -218,11 +213,13 @@ print.Lowe <- function(x, digits = NULL, ...) {
     digits <- max(3, getOption("digits") - 3)
   }
   cat("\nLowe productivity and profitability levels (summary):\n\n")
-  print(summary(x[["Levels"]], digits = digits), digits = digits)
+  print(summary(x[["Levels"]][-c(1:2)], digits = digits), digits = digits)
   cat("\n\nLowe productivity and profitability changes (summary):\n\n")
-  print(summary(x[["Changes"]], digits = digits), digits = digits)
-  cat("\n\nLowe productivity shadow prices (summary):\n\n")
-  print(summary(x[["Shadowp"]], digits = digits), digits = digits)
+  print(summary(x[["Changes"]][-c(1:2)], digits = digits), digits = digits)
+  if (!is.null(x[["Shadowp"]])) {
+    cat("\n\nLowe productivity shadow prices (summary):\n\n")
+    print(summary(x[["Shadowp"]][-c(1:2)], digits = digits), digits = digits)
+    }
   cat("\n")
   invisible(x)
 }

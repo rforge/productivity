@@ -1,6 +1,6 @@
 ## Classic malmquist auxiliary functions
 
-malm.1 <- function(data, step1, ano, year.vec, tech.reg, rts, orientation, parallel) {
+malm.1 <- function(data, step1, ano, year.vec, tech.reg, rts, orientation, parallel, itt, it) {
   ## period (Xt1, Yt1)
   X1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano + 1], step1$x.vars]))
   Y1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano + 1], step1$y.vars]))
@@ -25,14 +25,11 @@ malm.1 <- function(data, step1, ano, year.vec, tech.reg, rts, orientation, paral
   # Malmquist components
   if (rts == "crs") {
     res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), 
-      .combine = rbind, .packages = c("Rglpk")) %dopar% {
-      if (parallel == FALSE) {
-        cat("\r")
-        cat('Progress:', round(ano/length(year.vec)*100,0), '%', '\r')
-        flush.console()
-          if(ano == (length(year.vec) - 1) & dmu == length(data[data[, step1$time.var] == 
-          year.vec[ano], step1$id.var])) cat('DONE!               \n\r')
-        }
+      .combine = rbind, .packages = c("lpSolveAPI")) %dopar% {
+    if (parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
+      cat(nextElem(it))
+      flush.console()
+      }
       # n1n2n3: period reference, period input, period output
       if (orientation == "out") {
         c111o <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts = "crs")
@@ -59,14 +56,11 @@ malm.1 <- function(data, step1, ano, year.vec, tech.reg, rts, orientation, paral
     }
   } else {
     res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), 
-      .combine = rbind, .packages = c("Rglpk")) %dopar% {
-      if (parallel == FALSE) {
-          cat("\r")
-          cat('Progress:', round(ano/length(year.vec)*100,0), '%', '\r')
-          flush.console()
-          if(ano == (length(year.vec) - 1) & dmu == length(data[data[, step1$time.var] == 
-          year.vec[ano], step1$id.var])) cat('DONE!               \n\r')
-        }
+      .combine = rbind, .packages = c("lpSolveAPI")) %dopar% {
+    if (parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
+      cat(nextElem(it))
+      flush.console()
+      }
       # n1n2n3: period reference, period input, period output
       if (orientation == "out") {
         c111o <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts = "crs")
@@ -104,9 +98,9 @@ print.Malmquist <- function(x, digits = NULL, ...) {
         digits <- max(3, getOption("digits") - 3)
     }
     cat("\nShephard distance function estimates (summary):\n\n")
-    print(summary(x[["Levels"]], digits = digits), digits = digits)
+    print(summary(x[["Levels"]][-c(1:3)], digits = digits), digits = digits)
     cat("\n\nMalmquist productivity index results (summary):\n\n")
-    print(summary(x[["Changes"]], digits = digits), digits = digits)
+    print(summary(x[["Changes"]][-c(1:3)], digits = digits), digits = digits)
     cat("\n")
     invisible(x)
 }

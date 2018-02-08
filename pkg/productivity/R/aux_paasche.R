@@ -1,6 +1,6 @@
 ## Paasche with technical change
 
-paa.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation, parallel, scaled) {
+paa.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation, parallel, scaled, itt, it) {
   ## period (Xt1, Yt1)
   X1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
   Y1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
@@ -63,14 +63,11 @@ paa.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientatio
   }
   
   res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), .combine = rbind, 
-    .packages = c("Rglpk")) %dopar% {
-    if (parallel == FALSE) {
-      cat("\r")
-      cat("Progress:", ano/length(year.vec) * 100, "%", "\r")
+    .packages = c("lpSolveAPI")) %dopar% {
+    if (parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
+      cat(nextElem(it))
       flush.console()
-      if (ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == year.vec[ano], step1$id.var])) 
-        cat("DONE!               \n\r")
-    }
+      }
     Qt <- sum(P1[, dmu] * Y1[, dmu])
     Qs <- sum(P1[, dmu] * Y2[, dmu])
     Xt <- sum(W1[, dmu] * X1[, dmu])
@@ -218,7 +215,7 @@ paa.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientatio
 
 ## Paasche without technical change
 
-paa.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parallel, scaled) {
+paa.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parallel, scaled, itt, it) {
   ## period (Xt1, Yt1)
   X1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
   Y1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
@@ -260,14 +257,11 @@ paa.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, paralle
   YREFs <- t(as.matrix(data[, step1$y.vars]))
   
   res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), .combine = rbind, 
-    .packages = c("Rglpk")) %dopar% {
-    if (parallel == FALSE) {
-      cat("\r")
-      cat("Progress:", ano/length(year.vec) * 100, "%", "\r")
+    .packages = c("lpSolveAPI")) %dopar% {
+    if (parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
+      cat(nextElem(it))
       flush.console()
-      if (ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == year.vec[ano], step1$id.var])) 
-        cat("DONE!               \n\r")
-    }
+      }
     Qt <- sum(P1[, dmu] * Y1[, dmu])
     Qs <- sum(P1[, dmu] * Y2[, dmu])
     Xt <- sum(W1[, dmu] * X1[, dmu])
@@ -419,11 +413,13 @@ print.Paasche <- function(x, digits = NULL, ...) {
     digits <- max(3, getOption("digits") - 3)
   }
   cat("\nPaasche productivity and profitability levels (summary):\n\n")
-  print(summary(x[["Levels"]], digits = digits), digits = digits)
+  print(summary(x[["Levels"]][-c(1:2)], digits = digits), digits = digits)
   cat("\n\nPaasche productivity and profitability changes (summary):\n\n")
-  print(summary(x[["Changes"]], digits = digits), digits = digits)
+  print(summary(x[["Changes"]][-c(1:2)], digits = digits), digits = digits)
+  if (!is.null(x[["Shadowp"]])) {
   cat("\n\nPaasche productivity shadow prices (summary):\n\n")
-  print(summary(x[["Shadowp"]], digits = digits), digits = digits)
+  print(summary(x[["Shadowp"]][-c(1:2)], digits = digits), digits = digits)
+  }
   cat("\n")
   invisible(x)
 }

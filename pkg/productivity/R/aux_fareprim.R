@@ -1,6 +1,6 @@
 ### Färe-Primont (FP) first step FP (with technical change)
 
-fp.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation, parallel, scaled, PRICESO, PRICESI) {
+fp.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation, parallel, scaled, PRICESO, PRICESI, itt, it) {
   X1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
   Y1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
   if (tech.reg == TRUE) {
@@ -23,15 +23,11 @@ fp.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation
   }
   
   res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), .combine = rbind, 
-    .packages = c("Rglpk")) %dopar% {
-    if (parallel == FALSE) {
-      cat("\r")
-      cat("Progress:", ano/length(year.vec) * 100, "%", "\r")
-      #cat("\rComputing... ", rep(sprintf( c('|', '/', '-', '\\' )),ceiling(length(year.vec)/4))[ano])
+    .packages = c("lpSolveAPI")) %dopar% {
+    if (parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
+      cat(nextElem(it))
       flush.console()
-      if (ano == length(year.vec) & dmu == length(data[data[, step1$time.var] == year.vec[ano], step1$id.var])) 
-        cat("DONE!               \n\r")
-    }
+      }
     AO <- sum(PRICESO * Y1[, dmu])
     AI <- sum(PRICESI * X1[, dmu])
     TFP <- AO/AI
@@ -118,7 +114,7 @@ fp.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation
 
 ### Färe-Primont (FP) first step FP without technical change
 
-fp.2 <- function(data, data.in, step1, rts, orientation, parallel, scaled, PRICESO, PRICESI) {
+fp.2 <- function(data, data.in, step1, rts, orientation, parallel, scaled, PRICESO, PRICESI, itt, it) {
   X1 <- t(as.matrix(data[, step1$x.vars]))
   Y1 <- t(as.matrix(data[, step1$y.vars]))
   XREF1 <- X1
@@ -134,15 +130,12 @@ fp.2 <- function(data, data.in, step1, rts, orientation, parallel, scaled, PRICE
       X.ini <- t(as.matrix(data[, step1$x.vars]))
     }
   }
-  res2 <- foreach(dmu = 1:length(data[, step1$id.var]), .combine = rbind, .packages = c("Rglpk"), .export = c("DO.sh", 
+  res2 <- foreach(dmu = 1:length(data[, step1$id.var]), .combine = rbind, .packages = c("lpSolveAPI"), .export = c("DO.sh", 
     "DO.ome", "DI.sh", "DI.ime", "D.tfp")) %dopar% {
-    if (parallel == FALSE) {
-      cat("\r")
-      cat("Progress:", round(dmu/length(data[, step1$id.var]) * 100, 0), "%", "\r")
+    if (parallel == FALSE & dmu %in% itt) {
+      cat(nextElem(it))
       flush.console()
-      if (dmu == length(data[, step1$id.var])) 
-        cat("DONE!               \n\r")
-    }
+      }
     AO <- sum(PRICESO * Y1[, dmu])
     AI <- sum(PRICESI * X1[, dmu])
     TFP <- AO/AI
@@ -233,11 +226,13 @@ print.FarePrimont <- function(x, digits = NULL, ...) {
     digits <- max(3, getOption("digits") - 3)
   }
   cat("\nF\u00E4re-Primont productivity and profitability levels (summary):\n\n")
-  print(summary(x[["Levels"]], digits = digits), digits = digits)
+  print(summary(x[["Levels"]][-c(1:2)], digits = digits), digits = digits)
   cat("\n\nF\u00E4re-Primont productivity and profitability changes (summary):\n\n")
-  print(summary(x[["Changes"]], digits = digits), digits = digits)
+  print(summary(x[["Changes"]][-c(1:2)], digits = digits), digits = digits)
+  if (!is.null(x[["Shadowp"]])) {
   cat("\n\nF\u00E4re-Primont productivity shadow prices:\n\n")
-  print(x[["Shadowp"]], digits = digits)
+  print(x[["Shadowp"]][-c(1:2)], digits = digits)
+  }
   cat("\n")
   invisible(x)
 }
