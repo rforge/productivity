@@ -26,11 +26,14 @@ productivity with Malmquist index.}
   \item{orientation}{Character string specifying the orientation. The default value is \code{"out"} 
   (output-orientation). The other possible option is \code{"in"} (input-orientation).}
   \item{parallel}{Logical. Allows parallel computation. If \code{FALSE} (default) the estimation is conducted 
-  in sequential mode. If \code{TRUE} parallel mode is activated using the number of cores specified in \code{cores}.}
+  in sequential mode. If \code{TRUE}, parallel mode is activated using the number of cores specified in \code{cores}. 
+  However, when the sample size is small, it is recommended to keep the \code{parallel} option to its default value (\code{FALSE}).}
   \item{cores}{Integer. Used only if \code{parallel = TRUE}. It specifies the number of cores to be used 
   for parallel computation. By default, \code{cores = max(1, detectCores() - 1)}.}
-  \item{scaled}{Logical. Default is \code{FALSE}. When set to \code{TRUE}, the input and output 
-  quantities are rescaled. See also the \code{Details} section.}
+  \item{scaled}{Logical. Default is \code{FALSE}. When set to \code{TRUE}, the input and output quantities are 
+  rescaled. This option is is useful when working with very large (>1e5) and/or very small (<1e-4) values. 
+  When \code{scaled = FALSE} a warning message may be displayed when very large (or very small) values are 
+  present in the input and output quantity variables.}
   \item{x}{An object of class \verb{'Malmquist'}.}
   \item{digits}{The minimum number of significant digits to be printed in values.
   Default = \code{max(3, getOption("digits") - 3)}.} 
@@ -38,23 +41,15 @@ productivity with Malmquist index.}
 }
 
 \details{
-\code{malm()} allows for parallel computations (when \code{parallel = TRUE}, possibly by 
-registering a parallel backend (\pkg{doParallel} and \pkg{foreach} packages)). The \code{cores} argument 
-can be used to specify the number of cores to use. However, when the sample size is small, it is 
-recommended to keep the \code{parallel} option to its default value (\code{FALSE}).
-
-All DEA linear programs are implemented using the package \pkg{Rglpk}.
-
 The \code{tech.reg} option, when set to \code{FALSE}, rules out negative technological change 
 (i.e. technological regress). 
 In this case, technological change will increment between consecutive periods. 
 
-The \code{scaled} option is useful when working with very large (>1e5) and/or very small (<1e-4) values. 
-By default \code{scaled = FALSE}. In such case, \code{malm()} may issue a warning when very large 
-(or very small) values are present in the input and output quantity variables.
-Note that all the distance functions required for computing the Malmquist index 
-are radial measures which verify the translation invariance property. Hence, unless very large or 
-very small values are present, the Malmquist index is insensitive to the rescaling option.
+Distance functions required for computing the Malmquist index are radial measures which verify the translation 
+invariance property. Hence, unless very large or very small values are present, the Malmquist index is insensitive 
+to the rescaling option.
+
+All DEA linear programs are implemented using \pkg{lpSolveAPI}.
 }
 
 \value{
@@ -110,8 +105,8 @@ depending on the orientation.
 
 From an object of class \verb{'Malmquist'} obtained from \code{malm()}, the 
 \itemize{
-\item \code{\link{Levels}} function extracts Shephard distance function estimates; and 
-\item \code{\link{Changes}} function extracts Malmquist productivity index and its components.}
+\item \code{\link{Levels}} function extracts individual Shephard distance function estimates; and 
+\item \code{\link{Changes}} function extracts individual Malmquist productivity index and components.}
 }
 
 \references{
@@ -120,24 +115,25 @@ Dynamic DEA}. Springer Eds.}
 
 \author{K Hervé Dakpo, Yann Desjeux, Laure Latruffe}
 
-\note{The Malmquist productivity index and its components are computed such that both \code{orientation}'s results 
+\note{The Malmquist productivity index and components are computed such that both \code{orientation}'s results 
 can be read in the same way (growth when greater than one and decline when lower than one). 
 Moreover under \code{rts = "crs"}, both \code{orientation} options (i.e. \code{"out"} and 
 \code{"in"}) yield the same results.}
 
 \section{Warning}{The \code{malm()} function will not work with unbalanced data.}
 
-\seealso{See \code{\link{Levels}} to retrieve a data frame with Shephard distance function estimates.\cr
-See \code{\link{Changes}} to retrieve a data frame with Malmquist productivity index and its components.}
+\seealso{See \code{\link{Levels}} to retrieve a data frame with individual Shephard distance function estimates.\cr
+See \code{\link{Changes}} to retrieve a data frame with individual Malmquist productivity index and components.}
 
 \examples{
-\dontrun{
+
 ## Malmquist productivity index compares each observation in period 1 to the same 
 ## observation in period 0
+\dontrun{
   Malmquist <- malm(data = usagri, id.var = "States", time.var = "Years", 
   x.vars = c("q.capital", "q.land","q.labor","q.materials"), 
   y.vars = c("q.livestock", "q.crop", "q.other"), rts = "nirs", scaled = TRUE)
-    Malmquist
+  Malmquist
 }
 }
 

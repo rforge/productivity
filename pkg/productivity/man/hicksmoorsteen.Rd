@@ -3,14 +3,19 @@
 \alias{print.HicksMoorsteen}
 \title{Hicks-Moorsteen productivity and profitability index}
 \description{Using Data Envelopment Analysis (DEA), this function measures 
-productivity and profitability in levels and changes with Hicks-Moorsteen index.
+productivity and profitability (if price information is specified) in levels and changes 
+with Hicks-Moorsteen index.
 
-The Hicks-Moorsteen index is the geometric average of the Malmquist-MS and the Malmquist-NT.}
+The Hicks-Moorsteen index is the geometric average of its components, \emph{i.e.} 
+Malmquist-\emph{hs} and Malmquist-\emph{it} indices.
+
+Deflated shadow prices of inputs and outputs used to compute Malmquist-\emph{hs} and 
+Malmquist-\emph{it} indices can also be returned.}
 
 \usage{hicksmoorsteen(data, id.var, time.var, x.vars, y.vars, w.vars = NULL, p.vars = NULL, 
   tech.change = TRUE, tech.reg = TRUE, rts = c("vrs", "crs", "nirs", "ndrs"), 
   orientation = c("out", "in", "in-out"), parallel = FALSE, cores = max(1, 
-  detectCores() - 1), scaled = FALSE)
+  detectCores() - 1), scaled = FALSE, components = FALSE, shadow = FALSE)
 
 \method{print}{HicksMoorsteen}(x, digits = NULL, \dots)}
 
@@ -38,11 +43,20 @@ The Hicks-Moorsteen index is the geometric average of the Malmquist-MS and the M
   are \code{"in"} (input-orientation), and \code{"in-out"} (both input- and output-orientations). 
   For the latter, the geometric mean of input- and output-orientations' results is returned.}
   \item{parallel}{Logical. Allows parallel computation. If \code{FALSE} (default) the estimation is conducted 
-  in sequential mode. If \code{TRUE} parallel mode is activated using the number of cores specified in \code{cores}.}
+  in sequential mode. If \code{TRUE}, parallel mode is activated using the number of cores specified in \code{cores}. 
+  However, when the sample size is small, it is recommended to keep the \code{parallel} option to its default value (\code{FALSE}).}
   \item{cores}{Integer. Used only if \code{parallel = TRUE}. It specifies the number of cores to be used 
   for parallel computation. By default, \code{cores = max(1, detectCores() - 1)}.}
-  \item{scaled}{Logical. Default is \code{FALSE}. When set to \code{TRUE}, the input and output 
-  quantities are rescaled. See also the \code{Details} section.}
+  \item{scaled}{Logical. Default is \code{FALSE}. When set to \code{TRUE}, the input and output quantities are 
+  rescaled. This option is is useful when working with very large (>1e5) and/or very small (<1e-4) values. 
+  When \code{scaled = FALSE} a warning message may be displayed when very large (or very small) values are 
+  present in the input and output quantity variables.}
+  \item{components}{Logical. Default is \code{FALSE}. When set to \code{TRUE}, Malmquist-\emph{hs} and Malmquist-\emph{it} 
+  indices are also returned (in terms of levels, changes, along with shadow prices used to compute Malmquist-\emph{hs} and 
+  Malmquist-\emph{it}, if \code{shadow = TRUE}).}
+  \item{shadow}{Logical. Default is \code{FALSE}. When set to \code{TRUE} (and \code{components = TRUE}), individual deflated 
+  input and output shadow prices used to compute Malmquist-\emph{hs} and Malmquist-\emph{it} indices (and therefore 
+  Hick-Moorsteen index) are returned.}
   \item{x}{An object of class \verb{'HicksMoorsteen'}.}
   \item{digits}{The minimum number of significant digits to be printed in values.
   Default = \code{max(3, getOption("digits") - 3)}.} 
@@ -50,74 +64,84 @@ The Hicks-Moorsteen index is the geometric average of the Malmquist-MS and the M
 }
 
 \details{
-\code{hicksmoorsteen()} allows for parallel computations (when \code{parallel = TRUE}, possibly by 
-registering a parallel backend (\pkg{doParallel} and \pkg{foreach} packages)). The \code{cores} argument 
-can be used to specify the number of cores to use. However, when the sample size is small, it is 
-recommended to keep the \code{parallel} option to its default value (\code{FALSE}).
-
-All DEA linear programs are implemented using the package \pkg{Rglpk}.
+The Hicks-Moorsteen index is the geometric average of Malmquist-\emph{hs} and Malmquist-\emph{it} indices.
+For a dmu \emph{i} Malmquist-\emph{it} computes the productivity index based on the reference year \emph{t}.
+For a dmu \emph{h}, Malmquist-\emph{hs} computes the productivity index based on the reference year \emph{s} (i.e. \emph{t-1}).
+Therefore, the Malmquist-\emph{it} index uses the current period prices as aggregators, while the Malmquist-\emph{hs} index uses the 
+previous period prices as aggregators.
 
 The \code{tech.change} option allows to prohibit technological change. When \code{tech.change} 
 is set to \code{FALSE}, this overrides the effect of \code{tech.reg}. The \code{tech.reg} option, 
 when set to \code{FALSE}, rules out negative technological change (i.e. technological regress). 
 
-The \code{scaled} option is useful when working with very large (>1e5) and/or very small (<1e-4) values. 
-By default \code{scaled = FALSE}. In such case, \code{hicksmoorsteen()} may issue a warning when very large 
-(or very small) values are present in the input and output quantity variables.
-Note that the Hicks-Moorsteen index may be sensitive to the rescaling, especially the mix efficiency component.
+The Hicks-Moorsteen index may be sensitive to the rescaling, especially the mix efficiency component.
 
 The Hicks-Moorsteen index is not transitive and therefore each firm is compared to itself in the previous period. 
-Since there is no previous period for the first period, the results for this first period are replaced by \code{NA}. }
+Since there is no previous period for the first period, the results for this first period are replaced by \code{NA}. 
+
+All DEA linear programs are implemented using \pkg{lpSolveAPI}.
+}
 
 \value{
 \code{hicksmoorsteen()} returns a list of class \verb{'HicksMoorsteen'} for which a summary of productivity and profitability 
-(if price information is specified) measures in levels and changes is printed, as well as input (\code{x.vars}) and 
-output (\code{y.vars}) deflated shadow prices.
+(if price information is specified) measures in levels and changes, as well as a summary shadow prices (if \code{shadow = TRUE}), 
+is printed.
 
-This list contains the following items:
+This list contains the following elements:
 
-\item{Levels}{Several elements are provided, depending on the \code{orientation} specified:
-  \tabular{ll}{
-    \code{REV} \tab Revenues \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
-    \code{COST} \tab Costs \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
-    \code{PROF} \tab Profitability (\emph{if \code{w.vars} and \code{p.vars} are specified)}\cr
-    \code{P} \tab Aggregated output prices \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
-    \code{W} \tab Aggregated input prices \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
-    \code{TT} \tab Terms of trade (i.e. \code{P/W}) \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
-    \code{AO} \tab Aggregated outputs\cr
-    \code{AI} \tab Aggregated inputs\cr
-    \code{TFP} \tab Total Factor Productivity (TFP)\cr
-    \code{MP} \tab Maximum productivity\cr
-    \code{TFPE} \tab TFP efficiency score\cr
-    \code{OTE} \tab Output-oriented technical efficiency score\cr
-    \code{OSE} \tab Output-oriented scale efficiency score\cr
-    \code{OME} \tab Output-oriented mix efficiency score\cr
-    \code{ROSE} \tab Residual output-oriented scale efficiency score\cr
-    \code{OSME} \tab Output-oriented scale-mix efficiency score\cr
-    \code{ITE} \tab Input-oriented technical efficiency score\cr
-    \code{ISE} \tab Input-oriented scale efficiency score\cr
-    \code{IME} \tab Input-oriented mix efficiency score\cr
-    \code{RISE} \tab Residual input-oriented scale efficiency score\cr
-    \code{ISME} \tab Input-oriented scale-mix efficiency score\cr
-    \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE} \emph{(when \code{orientation = "in-out"})}\cr
-    \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE} \emph{(when \code{orientation = "in-out"})}\cr
-    \code{OME.IME} \tab Geometric mean of \code{OME} and \code{IME} \emph{(when \code{orientation = "in-out"})}\cr
-    \code{ROSE.RISE} \tab Geometric mean of \code{ROSE} and \code{RISE} \emph{(when \code{orientation = "in-out"})}\cr
-    \code{OSME.ISME} \tab Geometric mean of \code{OSME} and \code{ISME} \emph{(when \code{orientation = "in-out"})}\cr
-    \code{RME} \tab Residual mix efficiency score}
+-- \bold{HicksMoorsteen}, containing levels and changes related to Hick-Moorsteen index per-se, with:
+  \item{Levels}{Several elements are provided, depending on the \code{orientation} specified:
+    \tabular{ll}{
+      \code{REV} \tab Revenues \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
+      \code{COST} \tab Costs \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
+      \code{PROF} \tab Profitability (\emph{if \code{w.vars} and \code{p.vars} are specified)}\cr
+      \code{P} \tab Aggregated output prices \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
+      \code{W} \tab Aggregated input prices \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
+      \code{TT} \tab Terms of trade (i.e. \code{P/W}) \emph{(if \code{w.vars} and \code{p.vars} are specified)}\cr
+      \code{AO} \tab Aggregated outputs\cr
+      \code{AI} \tab Aggregated inputs\cr
+      \code{TFP} \tab Total Factor Productivity (TFP)\cr
+      \code{MP} \tab Maximum productivity\cr
+      \code{TFPE} \tab TFP efficiency score\cr
+      \code{OTE} \tab Output-oriented technical efficiency score\cr
+      \code{OSE} \tab Output-oriented scale efficiency score\cr
+      \code{OME} \tab Output-oriented mix efficiency score\cr
+      \code{ROSE} \tab Residual output-oriented scale efficiency score\cr
+      \code{OSME} \tab Output-oriented scale-mix efficiency score\cr
+      \code{ITE} \tab Input-oriented technical efficiency score\cr
+      \code{ISE} \tab Input-oriented scale efficiency score\cr
+      \code{IME} \tab Input-oriented mix efficiency score\cr
+      \code{RISE} \tab Residual input-oriented scale efficiency score\cr
+      \code{ISME} \tab Input-oriented scale-mix efficiency score\cr
+      \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE} (when \code{orientation = "in-out"})\cr
+      \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE} (when \code{orientation = "in-out"})\cr
+      \code{OME.IME} \tab Geometric mean of \code{OME} and \code{IME} (when \code{orientation = "in-out"})\cr
+      \code{ROSE.RISE} \tab Geometric mean of \code{ROSE} and \code{RISE} (when \code{orientation = "in-out"})\cr
+      \code{OSME.ISME} \tab Geometric mean of \code{OSME} and \code{ISME} (when \code{orientation = "in-out"})\cr
+      \code{RME} \tab Residual mix efficiency score}
 }
+  \item{Changes}{Change indices of the different elements of \code{Levels} are provided. Each change is prefixed by 
+   \code{"d"} (e.g. profitability change is denoted \code{dPROF}, output-oriented efficiency change is denoted \code{dOTE}, etc.).\cr}
 
-\item{Changes}{Change indices of the different elements of \code{Levels} are provided. Each change is prefixed by 
- \code{"d"} (e.g. profitability change is denoted \code{dPROF}, output-oriented efficiency change is denoted \code{dOTE}, etc.).}
+-- \bold{MalmquistHS}, provided only if \code{components = TRUE}, and containing levels, changes, and shadow prices related to Malmquist-\emph{hs} index, with: 
+  \item{Levels}{Several elements are provided, depending on the \code{orientation} specified.}
+  \item{Changes}{Change indices of the different elements of \code{Levels}.}
+  \item{Shadowp}{\bold{For each observation}, input (\code{x.vars}) and output (\code{y.vars}) deflated shadow prices used to compute 
+  Malmquist-\emph{hs} index. Returned only if \code{shadow = TRUE}.\cr}
 
-\item{Shadowp}{The deflated cost input shadow prices and the deflated revenue output shadow prices. 
-These prices are derived from dual input- and output-oriented DEA models for each observation in the sample.\cr}
+\bold{-- MalmquistIT}, provided only if \code{components = TRUE}, and containing levels, changes, and shadow prices related to Malmquist-\emph{it} index, with: 
+  \item{Levels}{Several elements are provided, depending on the \code{orientation} specified.}
+  \item{Changes}{Change indices of the different elements of \code{Levels} are provided.}
+  \item{Shadowp}{\bold{For each observation}, input (\code{x.vars}) and output (\code{y.vars}) deflated shadow prices used to compute 
+  Malmquist-\emph{it} index. Returned only if \code{shadow = TRUE}.\cr}
+
 
 From an object of class \verb{'HicksMoorsteen'} obtained from \code{hicksmoorsteen()}, the 
 \itemize{
-\item \code{\link{Levels}} function extracts Hicks-Moorsteen productivity and profitability \bold{levels};
-\item \code{\link{Changes}} function extracts Hicks-Moorsteen productivity and profitability \bold{change indices}; and 
-\item \code{\link{Shadowp}} function extracts input and output \bold{deflated shadow prices}.}
+\item \code{\link{Levels}} function extracts individual Hicks-Moorsteen productivity and profitability (if price information is specified) \bold{levels};
+\item \code{\link{Changes}} function extracts individual Hicks-Moorsteen productivity and profitability (if price information is specified) \bold{change indices}; and 
+\item If \code{shadow = TRUE}, the \code{\link{Shadowp}} function extracts individual input and output \bold{deflated shadow prices} 
+of Malmquist-\emph{hs} and Malmquist-\emph{it} indices.}
 }
 
 \references{
@@ -125,6 +149,10 @@ From an object of class \verb{'HicksMoorsteen'} obtained from \code{hicksmoorste
 Briec W., and Kerstens K. (2011). The Hicks-Moorsteen Productivity Index Satisfies the 
 Determinateness Axiom. \emph{The Manchester School}, \bold{79}(4), 765--775. 
 \url{https://doi.org/10.1111/j.1467-9957.2010.02169.x}
+
+Caves D.W., Christensen L.R., and Diewert W.E.(1982). The Economic Theory of Index Numbers 
+and the Measurement of Input, Output, and Productivity. \emph{Econometrica}, \bold{50}(6), 1393--1414. 
+URL: \url{http://www.jstor.org/stable/1913388}
 
 O'Donnell C.J. (2008), An aggregate quantity-price framework for measuring 
 and decomposing productivity and profitability change. School of Economics, 
@@ -145,30 +173,31 @@ URL: \url{http://www.uq.edu.au/economics/cepa/docs/WP/WP072011.pdf}
 \note{All output-oriented efficiency scores are computed \emph{a la} Shephard, while all input-oriented efficiency 
 scores are computed \emph{a la} Farrell. Hence, all efficiency scores are greater than zero and are lower or equal to one.}
 
-\section{Warning}{The \code{hicksmoorsteen()} function will not work with unbalanced data. The productivity levels are 
-obtained using shadow prices computed using dual (multipliers) DEA models. However, the issue 
-of multiple solutions can yield (for some observations) different results compared to other softwares like DPIN 
-or other simplex algorithm packages.}
+\section{Warning}{The \code{hicksmoorsteen()} function will not work with unbalanced data. 
 
-\seealso{See \code{\link{Levels}} to retrieve a data frame with Hicks-Moorsteen 
-productivity and profitability in levels and components.\cr
-See \code{\link{Changes}} to retrieve a data frame with Hicks-Moorsteen 
-productivity and profitability changes and components.\cr
-See \code{\link{Shadowp}} to retrieve deflated input and output shadow prices.\cr
+The productivity levels are obtained using shadow prices computed using dual (multipliers) DEA models. However, the issue 
+of multiple solutions can yield (for some observations) different results compared to other softwares or other simplex 
+algorithm packages.}
 
-See also \code{\link{malmMS}} and \code{\link{malmNT}} for computation with alternative indices.}
+\seealso{See \code{\link{Levels}} to retrieve a data frame with Hicks-Moorsteen productivity and profitability in levels 
+and components.\cr
+See \code{\link{Changes}} to retrieve a data frame with Hicks-Moorsteen productivity and profitability changes 
+and components.\cr
+See \code{\link{Shadowp}} to retrieve deflated input and output shadow prices, provided that \code{shadow = TRUE}.}
 
 \examples{
-\dontrun{
-## Hicks-Moorsteen productivity, without price information
-  Hicks1 <- hicksmoorsteen(data = usagri, id.var = "States", time.var = "Years", 
-  x.vars = c(7:10), y.vars = c(4:6), rts = "crs", orientation = "in", scaled = TRUE)
-    Hicks1
 
+## Hicks-Moorsteen productivity, without price information
+\dontrun{
+  Hicks1 <- hicksmoorsteen(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
+  y.vars = c(4:6), rts = "crs", orientation = "in", scaled = TRUE)
+  Hicks1
+}
 ## Hicks-Moorsteen productivity and profitability, with price information
-  Hicks2 <- hicksmoorsteen(data = usagri, id.var = "States", time.var = "Years", 
+\dontrun{
+Hicks2 <- hicksmoorsteen(data = usagri, id.var = "States", time.var = "Years", 
   x.vars = c(7:10), y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), scaled = TRUE)
-    Hicks2
+  Hicks2
 }
 }
 
