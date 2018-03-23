@@ -1,5 +1,5 @@
 # productivity 1.1.0
-Changes in 'productivity' version 1.1.0 (2018-02-02)
+Changes in 'productivity' version 1.1.0 (2018-03-16)
 
 ## NEW FEATURES
 

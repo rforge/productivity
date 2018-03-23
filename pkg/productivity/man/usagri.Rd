@@ -13,25 +13,26 @@ Alabama 1996 = 1.}
 \usage{usagri}
 
 \format{
-  A data frame with 480 observations on the following 17 variables.
-  \describe{
-    \item{\code{States}}{48 States of the USA identified with two capital letters.}
-    \item{\code{States.num}}{State number.}
-    \item{\code{Years}}{Year.}
-    \item{\code{q.livestock}}{Livestock and animal products' quantity, in thousand US$1996.}
-    \item{\code{q.crop}}{Crops' quantity, in thousand US$1996.}
-    \item{\code{q.other}}{Other farm-related productions' quantity, in thousand US$1996.}
-    \item{\code{q.capital}}{Capital services' quantity, in thousand US$1996.}
-    \item{\code{q.land}}{Land services' quantity, in thousand US$1996.}
-    \item{\code{q.labor}}{Labor services' quantity, in thousand US$1996.}
-    \item{\code{q.materials}}{Total intermediate input quantity, in thousand US$1996.}
-    \item{\code{p.livestock}}{Livestock and animal products' relative price (1 = Alabama 1996).}
-    \item{\code{p.crop}}{Crops' relative price (1 = Alabama 1996).}
-    \item{\code{p.other}}{Other farm-related productions' relative price (1 = Alabama 1996).}
-    \item{\code{p.capital}}{Capital services' relative price (1 = Alabama 1996).}
-    \item{\code{p.land}}{Land service flows' relative price (1 = Alabama 1996).}
-    \item{\code{p.labor}}{Labor services' relative price (1 = Alabama 1996).}
-    \item{\code{p.materials}}{Total intermediate inputs' relative price (1 = Alabama 1996).}
+  A data frame with 480 observations on the following 17 variables:
+  \tabular{ll}{
+    - \code{p.livestock}: \tab Livestock and animal products' relative price (reference is 1 = Alabama 1996).\cr
+    - \code{States}: \tab 48 States of the USA identified with two capital letters.\cr
+    - \code{States.num}: \tab State number.\cr
+    - \code{Years}: \tab Year.\cr
+    - \code{q.livestock}: \tab Livestock and animal products' quantity, in thousand US$1996.\cr
+    - \code{q.crop}: \tab Crops' quantity, in thousand US$1996.\cr
+    - \code{q.other}: \tab Other farm-related productions' quantity, in thousand US$1996.\cr
+    - \code{q.capital}: \tab Capital services' quantity, in thousand US$1996.\cr
+    - \code{q.land}: \tab Land services' quantity, in thousand US$1996.\cr
+    - \code{q.labor}: \tab Labor services' quantity, in thousand US$1996.\cr
+    - \code{q.materials}: \tab Total intermediate input quantity, in thousand US$1996.\cr
+    - \code{p.livestock}: \tab Livestock and animal products' relative price (reference is 1 = Alabama 1996).\cr
+    - \code{p.crop}: \tab Crops' relative price (reference is 1 = Alabama 1996).\cr
+    - \code{p.other}: \tab Other farm-related productions' relative price (reference is 1 = Alabama 1996).\cr
+    - \code{p.capital}: \tab Capital services' relative price (reference is 1 = Alabama 1996).\cr
+    - \code{p.land}: \tab Land service flows' relative price (reference is 1 = Alabama 1996).\cr
+    - \code{p.labor}: \tab Labor services' relative price (reference is 1 = Alabama 1996).\cr
+    - \code{p.materials}: \tab Total intermediate inputs' relative price (reference is 1 = Alabama 1996).\cr
   }
 }
 
@@ -54,9 +55,11 @@ of Agricultural Economics}, \bold{86}(5), 1315--1321.
 }
 
 \examples{
+\dontrun{
 head(usagri)
 str(usagri)
 summary(usagri)
+}
 }
 
 \keyword{datasets}

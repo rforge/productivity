@@ -5,8 +5,8 @@
 
 \description{From any object created by either \code{\link{fareprim}}, \code{\link{fisher}}, 
 \code{\link{hicksmoorsteen}}, \code{\link{laspeyres}}, \code{\link{lowe}}, or \code{\link{paasche}} 
-function, and provided that in the function's call the argument \code{shadow = TRUE}, this function 
-extracts the deflated cost input and revenue output shadow prices.}
+function, and provided that the argument \code{shadow} is set to \code{TRUE} in the function's call , 
+this function extracts the deflated cost input and revenue output shadow prices.}
 
 \usage{Shadowp(object, \dots)}
 
@@ -17,16 +17,17 @@ extracts the deflated cost input and revenue output shadow prices.}
 }
 
 \details{
-Shadow prices are derived from dual input- and output-oriented DEA models, and may be subject to the 
-linear programming solver used (\pkg{lpSolveAPI} in our case).
+Shadow prices are derived from dual input- and output-oriented DEA models. 
 
-For Fisher, Hicks-Moorsteen, Laspeyres, Lowe and Paasche indices, deflated input and output shadow 
+In the case of Fisher, Hicks-Moorsteen, Laspeyres, Lowe and Paasche indices, deflated input and output shadow 
 prices \bold{for each observation} are returned.
 
-In case of Hicks-Moorsteen, shadow prices used to compute malmquist-\emph{hs} and malmquist-\emph{nt} are returned.
+In the case of Hicks-Moorsteen index, shadow prices used to compute Malmquist-\emph{hs} and Malmquist-\emph{it} 
+\bold{for each observation} are returned (if the argument \code{components} of \code{\link{hicksmoorsteen}} 
+function is set to \code{TRUE}).
 
-For Färe-Primont index, the deflated input and output shadow prices \bold{of the representative observation} 
-are returned.
+In the case of Färe-Primont index, the deflated input and output shadow prices \bold{of the representative observation} 
+(i.e. the sample means of quantities and prices) are returned.
 
 \itemize{
 \item An object of class \verb{'FarePrimont'} is a result of a call to \code{\link{fareprim}}
@@ -37,8 +38,25 @@ are returned.
 \item An object of class \verb{'Paasche'} is a result of a call to \code{\link{paasche}}}
 }
 
-\value{The function returns a data frame containing all the elements and observations 
-included in the \code{"Shadowp"} constituent element of \code{object}.}
+\value{
+\itemize{
+  \item In the case of Färe-Primont, Fisher, Laspeyres, Lowe and Paasche indices, the function returns 
+    a \bold{data frame} containing all the elements and observations included in the \code{"Shadowp"} component of \code{object}.
+  \item In the case of Hicksmoorsteen index, the function can only be used when the \code{components} argument of the function 
+    \code{\link{hicksmoorsteen}} was set to \code{TRUE}. In such a case (i.e. \code{components = TRUE} in the call 
+    to \code{\link{hicksmoorsteen}}), the function returns a \bold{list} of two data frames containing, for each observation, 
+    input and output deflated shadow prices related to Malmquist-\emph{hs} and Malmquist-\emph{it} indices (and therefore 
+    not Hicks-Moorsteen shadow prices per se).
+      \describe{
+        \item{\code{*} MalmquistHS:}{A data frame containing, for each observation, input and output shadow prices of the Malmquist-\emph{hs} index.}
+        \item{\code{*} MalmquistIT:}{A data frame containing, for each observation, input and output shadow prices of the Malmquist-\emph{it} index.}
+      }
+    }
+}
+
+\section{Warning}{
+For extreme efficient observations, the problem of multiple solutions may arise and the values of 
+shadow prices may differ depending on the linear programming solver used (here \pkg{lpSolveAPI}).}
 
 \author{Yann Desjeux, K Hervé Dakpo, Laure Latruffe}
 
@@ -49,8 +67,7 @@ included in the \code{"Shadowp"} constituent element of \code{object}.}
 \examples{
 \dontrun{
   FISHER <- fisher(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
-  y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), orientation = "out", scaled = TRUE, 
-  shadow = TRUE)
+  y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), orientation = "out", shadow = TRUE)
   Fisher.shadowprices <- Shadowp(FISHER)
   head(Fisher.shadowprices)
 }

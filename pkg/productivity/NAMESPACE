@@ -8,7 +8,7 @@ S3method("print", "Lowe")
 S3method("print", "Malmquist")
 S3method("print", "Paasche")
 
-importFrom("lpSolveAPI", "get.objective", "get.variables", "lp.control", "make.lp", "set.bounds", "set.column", "set.constr.type", "set.objfn", "set.rhs", "set.row")
+importFrom("lpSolveAPI", "add.column", "add.constraint", "get.objective", "get.variables", "lp.control", "make.lp", "set.bounds", "set.column", "set.constr.type", "set.objfn", "set.rhs", "set.row")
 importFrom("doParallel", "registerDoParallel", "stopImplicitCluster")
 importFrom("parallel", "detectCores")
 importFrom("foreach", "foreach", "%dopar%", "registerDoSEQ")

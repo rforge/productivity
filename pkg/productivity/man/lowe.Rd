@@ -9,7 +9,7 @@ Deflated shadow prices of inputs and outputs can also be computed.}
 
 \usage{lowe(data, id.var, time.var, x.vars, y.vars, w.vars, p.vars, tech.change = TRUE, 
   tech.reg = TRUE, rts = c("vrs", "crs", "nirs", "ndrs"), orientation = c("out", 
-  "in", "in-out"), parallel = FALSE, cores = max(1, detectCores() - 1), scaled = FALSE, 
+  "in", "in-out"), parallel = FALSE, cores = max(1, detectCores() - 1), scaled = TRUE, 
   by.id = NULL, by.year = NULL, shadow = FALSE)
 
 \method{print}{Lowe}(x, digits = NULL, \dots)}
@@ -25,9 +25,10 @@ Deflated shadow prices of inputs and outputs can also be computed.}
   \item{w.vars}{Input price variables. Can be a vector of text strings or integers.}
   \item{p.vars}{Output price variables. Can be a vector of text strings or integers.}
   \item{tech.change}{Logical. If \code{TRUE} (default), the model allows for technological change. 
-  See also the \code{Details} section.}
+  If \code{FALSE}, technological change is prohibited. See also the \code{Details} section.}
   \item{tech.reg}{Logical. If \code{TRUE} (default), the model allows for negative technological change 
-  (i.e. technological regress). See also the \code{Details} section.}
+  (i.e. technological regress). If \code{FALSE}, only positive technological change (i.e. technological progress) 
+  is allowed. See also the \code{Details} section.}
   \item{rts}{Character string specifying the returns to scale assumption. 
   The default value is \code{"vrs"} (variable returns to scale). Other possible options 
   are \code{"crs"} (constant returns to scale), \code{"nirs"} (non-increasing returns to scale), 
@@ -35,22 +36,21 @@ Deflated shadow prices of inputs and outputs can also be computed.}
   \item{orientation}{Character string specifying the orientation. 
   The default value is \code{"out"} (output-orientation). Other possible options 
   are \code{"in"} (input-orientation), and \code{"in-out"} (both input- and output-orientations). 
-  For the latter, the geometric mean of input- and output-orientations' results is returned.}
+  For \code{"in-out"}, the geometric mean of input- and output-orientations' results is returned.}
   \item{parallel}{Logical. Allows parallel computation. If \code{FALSE} (default) the estimation is conducted 
   in sequential mode. If \code{TRUE}, parallel mode is activated using the number of cores specified in \code{cores}. 
-  However, when the sample size is small, it is recommended to keep the \code{parallel} option to its default value (\code{FALSE}).}
+  When the sample size is small, it is recommended to keep the \code{parallel} option to its default value (\code{FALSE}).}
   \item{cores}{Integer. Used only if \code{parallel = TRUE}. It specifies the number of cores to be used 
   for parallel computation. By default, \code{cores = max(1, detectCores() - 1)}.}
-  \item{scaled}{Logical. Default is \code{FALSE}. When set to \code{TRUE}, the input and output quantities are 
-  rescaled. This option is is useful when working with very large (>1e5) and/or very small (<1e-4) values. 
-  When \code{scaled = FALSE} a warning message may be displayed when very large (or very small) values are 
-  present in the input and output quantity variables.}
+  \item{scaled}{Logical. If \code{TRUE} (default), input and output quantities are rescaled. Setting \code{scaled = FALSE} 
+  (no rescaling of data) may lead to numerical problems while optimizing DEA models. If \code{FALSE}, a warning message is 
+  displayed when very large (>1e5) and/or very small (<1e-4) values are present in the input and output quantity variables.}
   \item{by.id}{Integer specifying the reference observation used for computing the indices (Optional). 
   \code{by.id} must range between one and the total number of firms per period. See also the \code{Details} section.}
   \item{by.year}{Integer specifying the reference year used for computing the indices (Optional). 
   \code{by.year} must range between one and the total number of time periods. See also the \code{Details} section.}
-  \item{shadow}{Logical. Default is \code{FALSE}. When set to \code{TRUE}, input and output shadow prices are returned. 
-  These shadow prices are informative only and may be subject to the linear programming solver used.}
+  \item{shadow}{Logical. Default is \code{FALSE} (no shadow prices are returned). When set to \code{TRUE}, input and output 
+  shadow prices are returned. These shadow prices are informative only and may be subject to the linear programming solver used.}
   \item{x}{An object of class \verb{'Lowe'}.}
   \item{digits}{The minimum number of significant digits to be printed in values.
   Default = \code{max(3, getOption("digits") - 3)}.} 
@@ -58,13 +58,7 @@ Deflated shadow prices of inputs and outputs can also be computed.}
 }
 
 \details{
-The \code{tech.change} option allows to prohibit technological change. When \code{tech.change} 
-is set to \code{FALSE}, this cancels the effect of \code{tech.reg} whatever the value of the latter.
-The \code{tech.reg} option, when set to \code{FALSE}, rules out negative technological change 
-(i.e. technological regress).
-In this case technological change will increment between consecutive periods. 
-
-The Lowe index may be sensitive to the rescaling, especially the mix efficiency component.
+When \code{tech.change} is set to \code{FALSE}, this overrides the effect of \code{tech.reg}. 
 
 By default \code{by.id = NULL} and \code{by.year = NULL}. This means that in the computation of 
 change indices, each observation is by default compared to itself in the first period. \code{by.id} and 
@@ -72,8 +66,6 @@ change indices, each observation is by default compared to itself in the first p
 If \code{by.id} is specified and \code{by.year = NULL}, then the reference observation is \code{by.id} 
 in the first period. If \code{by.year} is specified and \code{by.id = NULL}, then each observation is compared 
 to itself in the specified period of time.
-
-All DEA linear programs are implemented using \pkg{lpSolveAPI}.
 }
 
 \value{
@@ -105,11 +97,11 @@ This list contains the following items:
     \code{IME} \tab Input-oriented mix efficiency score\cr
     \code{RISE} \tab Residual input-oriented scale efficiency score\cr
     \code{ISME} \tab Input-oriented scale-mix efficiency score\cr
-    \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE} (when \code{orientation = "in-out"})\cr
-    \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE} (when \code{orientation = "in-out"})\cr
-    \code{OME.IME} \tab Geometric mean of \code{OME} and \code{IME} (when \code{orientation = "in-out"})\cr
-    \code{ROSE.RISE} \tab Geometric mean of \code{ROSE} and \code{RISE} (when \code{orientation = "in-out"})\cr
-    \code{OSME.ISME} \tab Geometric mean of \code{OSME} and \code{ISME} (when \code{orientation = "in-out"})\cr
+    \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE} \emph{(when \code{orientation = "in-out"})}\cr
+    \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE} \emph{(when \code{orientation = "in-out"})}\cr
+    \code{OME.IME} \tab Geometric mean of \code{OME} and \code{IME} \emph{(when \code{orientation = "in-out"})}\cr
+    \code{ROSE.RISE} \tab Geometric mean of \code{ROSE} and \code{RISE} \emph{(when \code{orientation = "in-out"})}\cr
+    \code{OSME.ISME} \tab Geometric mean of \code{OSME} and \code{ISME} \emph{(when \code{orientation = "in-out"})}\cr
     \code{RME} \tab Residual mix efficiency score}
 }
 
@@ -117,8 +109,8 @@ This list contains the following items:
 Each change is prefixed by \code{"d"} (e.g. profitability change is denoted \code{dPROF}, 
 output-oriented efficiency change is denoted \code{dOTE}, etc.).}
 
-\item{Shadowp}{Returned only if \code{shadow = TRUE}. The deflated cost input (\code{x.vars}) shadow prices and the 
-deflated revenue output (\code{y.vars}) shadow prices. These prices may be subject to the linear programming solver used.\cr}
+\item{Shadowp}{Returned only if \code{shadow = TRUE}. It contains the deflated cost input (\code{x.vars}) shadow prices and the 
+deflated revenue output (\code{y.vars}) shadow prices.\cr}
 
 From an object of class \verb{'Lowe'} obtained from \code{lowe()}, the 
 \itemize{
@@ -150,8 +142,12 @@ Economics}, \bold{94}(4), 873--890.
 input-oriented efficiency scores are computed \emph{a la} Farrell.
 Hence, all efficiency scores are greater than zero and are lower or equal to one.}
 
-\section{Warning}{The \code{lowe()} function might not properly work with unbalanced 
-panel data.}
+\section{Warning}{The \code{lowe()} function will not work with unbalanced panel data.
+
+For extreme efficient observations, the problem of multiple solutions may arise and the values of 
+shadow prices may differ depending on the linear programming solver used (here \pkg{lpSolveAPI}).
+
+The Lowe index may be sensitive to the rescaling, especially the mix efficiency component.}
 
 \seealso{See \code{\link{Levels}} to retrieve a data frame with Lowe 
 productivity and profitability in levels and components.\cr
@@ -165,8 +161,8 @@ See also \code{\link{fareprim}} for computations with an alternative transitive 
 ## Lowe profitability and productivity levels and changes' computations
 \dontrun{
   Lowe.prod <- lowe(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
-  y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), orientation = "in-out", scaled = TRUE, 
-  by.id = 1, by.year = 1)
+  y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), orientation = "in-out", by.id = 1, 
+  by.year = 1)
   Lowe.prod
 }
 }

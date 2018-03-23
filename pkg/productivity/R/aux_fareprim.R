@@ -1,6 +1,6 @@
 ### Färe-Primont (FP) first step FP (with technical change)
 
-fp.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation, parallel, scaled, PRICESO, PRICESI, itt, it) {
+fp.1 <- function(data, step1, ano, year.vec, tech.reg, rts, orientation, parallel, PRICESO, PRICESI, mean.x, mean.y, itt, it) {
   X1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
   Y1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
   if (tech.reg == TRUE) {
@@ -13,20 +13,12 @@ fp.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation
   if (length(step1) == 6) {
     P1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$p.vars]))
     W1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$w.vars]))
-    if (scaled == TRUE) {
-      Y.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$y.vars]))
-      X.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$x.vars]))
-    } else {
-      Y.ini <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
-      X.ini <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
-    }
   }
-  
   res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), .combine = rbind, 
     .packages = c("lpSolveAPI")) %dopar% {
-    if (parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
-      cat(nextElem(it))
-      flush.console()
+      if (nrow(data) > 99 & parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
+        cat(nextElem(it))
+        flush.console()
       }
     AO <- sum(PRICESO * Y1[, dmu])
     AI <- sum(PRICESI * X1[, dmu])
@@ -34,76 +26,68 @@ fp.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation
     MP <- D.tfp(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO, PRICESI, rts)
     TFPE <- TFP/MP
     if (orientation == "out") {
-      OTE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-      OSE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts = "crs")/OTE
-      OME <- DO.ome(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO, rts)/OTE
-      ROSE <- ((AO/(OTE * OME))/AI)/MP
-      OSME <- OME * ROSE
-      RME <- TFPE/OTE/OSE
+      teseme.O <- DO.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO, rts)
+      ROSE <- ((AO/(teseme.O["OTE"] * teseme.O["OME"]))/AI)/MP
+      OSME <- teseme.O["OME"] * ROSE
+      RME <- TFPE/teseme.O["OTE"]/teseme.O["OSE"]
       if (length(step1) == 6) {
-        REV <- sum(Y.ini[, dmu] * P1[, dmu])
-        COST <- sum(X.ini[, dmu] * W1[, dmu])
+        REV <- sum(Y1[, dmu] * mean.y * P1[, dmu])
+        COST <- sum(X1[, dmu] * mean.x * W1[, dmu])
         PROF <- REV/COST
         P <- REV/AO
         W <- COST/AI
         TT <- P/W
         res1 <- c(REV = REV, COST = COST, PROF = PROF, P = P, W = W, TT = TT, AO = AO, AI = AI, TFP = TFP, 
-          MP = MP, TFPE = TFPE, OTE = OTE, OSE = OSE, OME = OME, ROSE = ROSE, OSME = OSME, RME = RME)
+          MP = MP, TFPE = TFPE, teseme.O, ROSE = unname(ROSE), OSME = unname(OSME), RME = unname(RME))
       } else {
-        res1 <- c(AO = AO, AI = AI, TFP = TFP, MP = MP, TFPE = TFPE, OTE = OTE, OSE = OSE, OME = OME, ROSE = ROSE, 
-          OSME = OSME, RME = RME)
+        res1 <- c(AO = AO, AI = AI, TFP = TFP, MP = MP, TFPE = TFPE, teseme.O, 
+                  ROSE = unname(ROSE), OSME = unname(OSME), RME = unname(RME))
       }
     } else {
       if (orientation == "in") {
-        ITE <- 1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-        ISE <- (1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts = "crs"))/ITE
-        IME <- (1/DI.ime(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESI, rts))/ITE
-        RISE <- (AO/(AI * IME * ITE))/MP
-        ISME <- IME * RISE
-        RME <- TFPE/ITE/ISE
+        teseme.I <- DI.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESI, rts)
+        RISE <- (AO/(AI * teseme.I["IME"] * teseme.I["ITE"]))/MP
+        ISME <- teseme.I["IME"] * RISE
+        RME <- TFPE/teseme.I["ITE"]/teseme.I["ISE"]
         if (length(step1) == 6) {
-          REV <- sum(Y.ini[, dmu] * P1[, dmu])
-          COST <- sum(X.ini[, dmu] * W1[, dmu])
+          REV <- sum(Y1[, dmu] * mean.y * P1[, dmu])
+          COST <- sum(X1[, dmu] * mean.x * W1[, dmu])
           PROF <- REV/COST
           P <- REV/AO
           W <- COST/AI
           TT <- P/W
           res1 <- c(REV = REV, COST = COST, PROF = PROF, P = P, W = W, TT = TT, AO = AO, AI = AI, TFP = TFP, 
-          MP = MP, TFPE = TFPE, ITE = ITE, ISE = ISE, IME = IME, RISE = RISE, ISME = ISME, RME = RME)
+          MP = MP, TFPE = TFPE, teseme.I, RISE = unname(RISE), ISME = unname(ISME),
+          RME = unname(RME))
         } else {
-          res1 <- c(AO = AO, AI = AI, TFP = TFP, MP = MP, TFPE = TFPE, ITE = ITE, ISE = ISE, IME = IME, 
-          RISE = RISE, ISME = ISME, RME = RME)
+          res1 <- c(AO = AO, AI = AI, TFP = TFP, MP = MP, TFPE = TFPE, teseme.I, 
+                    RISE = unname(RISE), ISME = unname(ISME), RME = unname(RME))
         }
       } else {
-        OTE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-        OSE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts = "crs")/OTE
-        OME <- DO.ome(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO, rts)/OTE
-        ROSE <- ((AO/(OTE * OME))/AI)/MP
-        OSME <- OME * ROSE
-        RME <- TFPE/OTE/OSE
-        ITE <- 1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-        ISE <- (1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts = "crs"))/ITE
-        IME <- (1/DI.ime(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESI, rts))/ITE
-        RISE <- (AO/(AI * IME * ITE))/MP
-        ISME <- IME * RISE
-        OTE.ITE <- sqrt(OTE * ITE)
-        OSE.ISE <- sqrt(OSE * ISE)
-        OME.IME <- sqrt(OME * IME)
+        teseme.O <- DO.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO, rts)
+        ROSE <- ((AO/(teseme.O["OTE"] * teseme.O["OME"]))/AI)/MP
+        OSME <- teseme.O["OME"] * ROSE
+        RME <- TFPE/teseme.O["OTE"]/teseme.O["OSE"]
+        teseme.I <- DI.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESI, rts)
+        RISE <- (AO/(AI * teseme.I["IME"] * teseme.I["ITE"]))/MP
+        ISME <- teseme.I["IME"] * RISE
+        teseme.OI <- sqrt(teseme.O * teseme.I)
+        names(teseme.OI) <- c("OTE.ITE", "OSE.ISE", "OME.IME")
         ROSE.RISE <- sqrt(ROSE * RISE)
-        OSME.ISME <- sqrt(OME.IME * ROSE.RISE)
+        OSME.ISME <- teseme.OI["OME.IME"] * ROSE.RISE
         if (length(step1) == 6) {
-          REV <- sum(Y.ini[, dmu] * P1[, dmu])
-          COST <- sum(X.ini[, dmu] * W1[, dmu])
+          REV <- sum(Y1[, dmu] * mean.y * P1[, dmu])
+          COST <- sum(X1[, dmu] * mean.x * W1[, dmu])
           PROF <- REV/COST
           P <- REV/AO
           W <- COST/AI
           TT <- P/W
           res1 <- c(REV = REV, COST = COST, PROF = PROF, P = P, W = W, TT = TT, AO = AO, AI = AI, TFP = TFP, 
-          MP = MP, TFPE = TFPE, OTE.ITE = OTE.ITE, OSE.ISE = OSE.ISE, OME.IME = OME.IME, ROSE.RISE = ROSE.RISE, 
-          OSME.ISME = OSME.ISME, RME = RME)
+          MP = MP, TFPE = TFPE, teseme.OI, ROSE.RISE = unname(ROSE.RISE), 
+          OSME.ISME = unname(OSME.ISME), RME = unname(RME))
         } else {
-          res1 <- c(AO = AO, AI = AI, TFP = TFP, MP = MP, TFPE = TFPE, OTE.ITE = OTE.ITE, OSE.ISE = OSE.ISE, 
-          OME.IME = OME.IME, ROSE.RISE = ROSE.RISE, OSME.ISME = OSME.ISME, RME = RME)
+          res1 <- c(AO = AO, AI = AI, TFP = TFP, MP = MP, TFPE = TFPE, teseme.OI, 
+                    ROSE.RISE = unname(ROSE.RISE), OSME.ISME = unname(OSME.ISME), RME = unname(RME))
         }
       }
     }
@@ -114,7 +98,7 @@ fp.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation
 
 ### Färe-Primont (FP) first step FP without technical change
 
-fp.2 <- function(data, data.in, step1, rts, orientation, parallel, scaled, PRICESO, PRICESI, itt, it) {
+fp.2 <- function(data, step1, rts, orientation, parallel, PRICESO, PRICESI, mean.x, mean.y, itt, it) {
   X1 <- t(as.matrix(data[, step1$x.vars]))
   Y1 <- t(as.matrix(data[, step1$y.vars]))
   XREF1 <- X1
@@ -122,19 +106,12 @@ fp.2 <- function(data, data.in, step1, rts, orientation, parallel, scaled, PRICE
   if (length(step1) == 6) {
     P1 <- t(as.matrix(data[, step1$p.vars]))
     W1 <- t(as.matrix(data[, step1$w.vars]))
-    if (scaled == TRUE) {
-      Y.ini <- t(as.matrix(data.in[, step1$y.vars]))
-      X.ini <- t(as.matrix(data.in[, step1$x.vars]))
-    } else {
-      Y.ini <- t(as.matrix(data[, step1$y.vars]))
-      X.ini <- t(as.matrix(data[, step1$x.vars]))
-    }
   }
-  res2 <- foreach(dmu = 1:length(data[, step1$id.var]), .combine = rbind, .packages = c("lpSolveAPI"), .export = c("DO.sh", 
-    "DO.ome", "DI.sh", "DI.ime", "D.tfp")) %dopar% {
-    if (parallel == FALSE & dmu %in% itt) {
-      cat(nextElem(it))
-      flush.console()
+  res2 <- foreach(dmu = 1:length(data[, step1$id.var]), .combine = rbind, .packages = c("lpSolveAPI"), .export = c("DO.teseme", 
+    "DI.teseme", "D.tfp")) %dopar% {
+      if (nrow(data) > 99 & parallel == FALSE & dmu %in% itt) {
+        cat(nextElem(it))
+        flush.console()
       }
     AO <- sum(PRICESO * Y1[, dmu])
     AI <- sum(PRICESI * X1[, dmu])
@@ -142,76 +119,68 @@ fp.2 <- function(data, data.in, step1, rts, orientation, parallel, scaled, PRICE
     MP <- D.tfp(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO, PRICESI, rts)
     TFPE <- TFP/MP
     if (orientation == "out") {
-      OTE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-      OSE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts = "crs")/OTE
-      OME <- DO.ome(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO, rts)/OTE
-      ROSE <- ((AO/(OTE * OME))/AI)/MP
-      OSME <- OME * ROSE
-      RME <- TFPE/OTE/OSE
+      teseme.O <- DO.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO, rts)
+      ROSE <- ((AO/(teseme.O["OTE"] * teseme.O["OME"]))/AI)/MP
+      OSME <- teseme.O["OME"] * ROSE
+      RME <- TFPE/teseme.O["OTE"]/teseme.O["OSE"]
       if (length(step1) == 6) {
-        REV <- sum(Y.ini[, dmu] * P1[, dmu])
-        COST <- sum(X.ini[, dmu] * W1[, dmu])
+        REV <- sum(Y1[, dmu] * mean.y * P1[, dmu])
+        COST <- sum(X1[, dmu] * mean.x * W1[, dmu])
         PROF <- REV/COST
         P <- REV/AO
         W <- COST/AI
         TT <- P/W
         res1 <- c(REV = REV, COST = COST, PROF = PROF, P = P, W = W, TT = TT, AO = AO, AI = AI, TFP = TFP, 
-          MP = MP, TFPE = TFPE, OTE = OTE, OSE = OSE, OME = OME, ROSE = ROSE, OSME = OSME, RME = RME)
+                  MP = MP, TFPE = TFPE, teseme.O, ROSE = unname(ROSE), OSME = unname(OSME), RME = unname(RME))
       } else {
-        res1 <- c(AO = AO, AI = AI, TFP = TFP, MP = MP, TFPE = TFPE, OTE = OTE, OSE = OSE, OME = OME, ROSE = ROSE, 
-          OSME = OSME, RME = RME)
+        res1 <- c(AO = AO, AI = AI, TFP = TFP, MP = MP, TFPE = TFPE, teseme.O, 
+                  ROSE = unname(ROSE), OSME = unname(OSME), RME = unname(RME))
       }
     } else {
       if (orientation == "in") {
-        ITE <- 1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-        ISE <- (1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts = "crs"))/ITE
-        IME <- (1/DI.ime(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESI, rts))/ITE
-        RISE <- (AO/(AI * IME * ITE))/MP
-        ISME <- IME * RISE
-        RME <- TFPE/ITE/ISE
+        teseme.I <- DI.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESI, rts)
+        RISE <- (AO/(AI * teseme.I["IME"] * teseme.I["ITE"]))/MP
+        ISME <- teseme.I["IME"] * RISE
+        RME <- TFPE/teseme.I["ITE"]/teseme.I["ISE"]
         if (length(step1) == 6) {
-          REV <- sum(Y.ini[, dmu] * P1[, dmu])
-          COST <- sum(X.ini[, dmu] * W1[, dmu])
+          REV <- sum(Y1[, dmu] * mean.y * P1[, dmu])
+          COST <- sum(X1[, dmu] * mean.x * W1[, dmu])
           PROF <- REV/COST
           P <- REV/AO
           W <- COST/AI
           TT <- P/W
           res1 <- c(REV = REV, COST = COST, PROF = PROF, P = P, W = W, TT = TT, AO = AO, AI = AI, TFP = TFP, 
-          MP = MP, TFPE = TFPE, ITE = ITE, ISE = ISE, IME = IME, RISE = RISE, ISME = ISME, RME = RME)
+                    MP = MP, TFPE = TFPE, teseme.I, RISE = unname(RISE), ISME = unname(ISME),
+                    RME = unname(RME))
         } else {
-          res1 <- c(AO = AO, AI = AI, TFP = TFP, MP = MP, TFPE = TFPE, ITE = ITE, ISE = ISE, IME = IME, 
-          RISE = RISE, ISME = ISME, RME = RME)
+          res1 <- c(AO = AO, AI = AI, TFP = TFP, MP = MP, TFPE = TFPE, teseme.I, 
+                    RISE = unname(RISE), ISME = unname(ISME), RME = unname(RME))
         }
       } else {
-        OTE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-        OSE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts = "crs")/OTE
-        OME <- DO.ome(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO, rts)/OTE
-        ROSE <- ((AO/(OTE * OME))/AI)/MP
-        OSME <- OME * ROSE
-        RME <- TFPE/OTE/OSE
-        ITE <- 1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-        ISE <- (1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts = "crs"))/ITE
-        IME <- (1/DI.ime(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESI, rts))/ITE
-        RISE <- (AO/(AI * IME * ITE))/MP
-        ISME <- IME * RISE
-        OTE.ITE <- sqrt(OTE * ITE)
-        OSE.ISE <- sqrt(OSE * ISE)
-        OME.IME <- sqrt(OME * IME)
+        teseme.O <- DO.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO, rts)
+        ROSE <- ((AO/(teseme.O["OTE"] * teseme.O["OME"]))/AI)/MP
+        OSME <- teseme.O["OME"] * ROSE
+        RME <- TFPE/teseme.O["OTE"]/teseme.O["OSE"]
+        teseme.I <- DI.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESI, rts)
+        RISE <- (AO/(AI * teseme.I["IME"] * teseme.I["ITE"]))/MP
+        ISME <- teseme.I["IME"] * RISE
+        teseme.OI <- sqrt(teseme.O * teseme.I)
+        names(teseme.OI) <- c("OTE.ITE", "OSE.ISE", "OME.IME")
         ROSE.RISE <- sqrt(ROSE * RISE)
-        OSME.ISME <- sqrt(OME.IME * ROSE.RISE)
+        OSME.ISME <- teseme.OI["OME.IME"] * ROSE.RISE
         if (length(step1) == 6) {
-          REV <- sum(Y.ini[, dmu] * P1[, dmu])
-          COST <- sum(X.ini[, dmu] * W1[, dmu])
+          REV <- sum(Y1[, dmu] * mean.y * P1[, dmu])
+          COST <- sum(X1[, dmu] * mean.x * W1[, dmu])
           PROF <- REV/COST
           P <- REV/AO
           W <- COST/AI
           TT <- P/W
           res1 <- c(REV = REV, COST = COST, PROF = PROF, P = P, W = W, TT = TT, AO = AO, AI = AI, TFP = TFP, 
-          MP = MP, TFPE = TFPE, OTE.ITE = OTE.ITE, OSE.ISE = OSE.ISE, OME.IME = OME.IME, ROSE.RISE = ROSE.RISE, 
-          OSME.ISME = OSME.ISME, RME = RME)
+                    MP = MP, TFPE = TFPE, teseme.OI, ROSE.RISE = unname(ROSE.RISE), 
+                    OSME.ISME = unname(OSME.ISME), RME = unname(RME))
         } else {
-          res1 <- c(AO = AO, AI = AI, TFP = TFP, MP = MP, TFPE = TFPE, OTE.ITE = OTE.ITE, OSE.ISE = OSE.ISE, 
-          OME.IME = OME.IME, ROSE.RISE = ROSE.RISE, OSME.ISME = OSME.ISME, RME = RME)
+          res1 <- c(AO = AO, AI = AI, TFP = TFP, MP = MP, TFPE = TFPE, teseme.OI, 
+                    ROSE.RISE = unname(ROSE.RISE), OSME.ISME = unname(OSME.ISME), RME = unname(RME))
         }
       }
     }
@@ -226,12 +195,12 @@ print.FarePrimont <- function(x, digits = NULL, ...) {
     digits <- max(3, getOption("digits") - 3)
   }
   cat("\nF\u00E4re-Primont productivity and profitability levels (summary):\n\n")
-  print(summary(x[["Levels"]][-c(1:2)], digits = digits), digits = digits)
+  print(summary(x[["Levels"]], digits = digits), digits = digits)
   cat("\n\nF\u00E4re-Primont productivity and profitability changes (summary):\n\n")
-  print(summary(x[["Changes"]][-c(1:2)], digits = digits), digits = digits)
+  print(summary(x[["Changes"]], digits = digits), digits = digits)
   if (!is.null(x[["Shadowp"]])) {
-  cat("\n\nF\u00E4re-Primont productivity shadow prices:\n\n")
-  print(x[["Shadowp"]][-c(1:2)], digits = digits)
+    cat("\n\nF\u00E4re-Primont productivity shadow prices:\n\n")
+    print(x[["Shadowp"]][-c(1:2)], digits = digits)
   }
   cat("\n")
   invisible(x)

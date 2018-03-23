@@ -28,8 +28,23 @@ indices from any object created by either \code{\link{fareprim}}, \code{\link{fi
 \item An object of class \verb{'Paasche'} is a result of a call to \code{\link{paasche}}}
 }
 
-\value{The function returns a data frame containing all the elements and observations 
-included in the \code{"Changes"} constituent element of \code{object}.}
+\value{
+\itemize{
+  \item In the case of Färe-Primont, Fisher, Laspeyres, Lowe, Malmquist, and Paasche indices, the function returns 
+    a \bold{data frame} containing all the elements and observations included in the \code{"Changes"} component of \code{object}.
+  \item In the case of Hicksmoorsteen index:
+    \itemize{
+      \item When \code{components = FALSE} (default) in the call to \code{\link{hicksmoorsteen}}, the function returns a \bold{data frame} 
+        containing all the elements and observations included in the \code{"Changes"} component of the object of class \verb{'HicksMoorsteen'}.
+      \item When \code{components = TRUE} in the call to \code{\link{hicksmoorsteen}}, the function returns a \bold{list} of three data frames:
+        \describe{
+          \item{\code{*} HicksMoorsteen:}{A data frame containing all the elements and observations related to \code{"Changes"} component of the Hicks-Moorsteen index.}
+          \item{\code{*} MalmquistHS:}{A data frame containing all the elements and observations related to \code{"Changes"} component of the Malmquist-\emph{hs} index.}
+          \item{\code{*} MalmquistIT:}{A data frame containing all the elements and observations related to \code{"Changes"} component of the Malmquist-\emph{it} index.}
+        }
+    }
+}
+}
 
 \author{Yann Desjeux, K Hervé Dakpo, Laure Latruffe}
 
@@ -43,8 +58,10 @@ See also:\cr
 
 \examples{
 \dontrun{
-  FAREPRIM <- fareprim(data = usagri, id.var = "States", time.var = "Years", x.vars = c(7:10), 
-  y.vars = c(4:6), w.vars = c(14:17), p.vars = c(11:13), scaled = TRUE)
+  FAREPRIM <- fareprim(data = usagri, id.var = "States", time.var = "Years", 
+  x.vars = c("q.capital", "q.land","q.labor","q.materials"), y.vars = c("q.livestock", 
+  "q.crop", "q.other"), w.vars = c("p.capital", "p.land", "p.labour", "p.materials"), 
+  p.vars = c("p.livestock", "p.crop", "p.other"))
   Fareprim.change <- Changes(FAREPRIM)
   head(Fareprim.change)
 }

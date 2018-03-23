@@ -1,6 +1,7 @@
 ## Fisher with technical change
 
-fish.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientation, parallel, scaled, itt, it) {
+
+fish.1 <- function(data, step1, ano, year.vec, tech.reg, rts, orientation, parallel, mean.x, mean.y, itt, it, shadow) {
   ## period (Xt1, Yt1)
   X1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
   Y1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
@@ -38,7 +39,6 @@ fish.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientati
       t(as.matrix(data[data[, step1$time.var] %in% year.vec[1:(ano - 1)], step1$y.vars]))
     }
   }
-  
   ## prices matrix
   P1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$p.vars]))
   P2 <- if (ano == 1) {
@@ -52,37 +52,24 @@ fish.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientati
   } else {
     t(as.matrix(data[data[, step1$time.var] == year.vec[ano - 1], step1$w.vars]))
   }
-  
-  ## unscaled data
-  if (scaled == TRUE) {
-    Y.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$y.vars]))
-    X.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$x.vars]))
-  } else {
-    Y.ini <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
-    X.ini <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
-  }
-  
   res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), 
     .combine = rbind, .packages = c("lpSolveAPI")) %dopar% {
-    if (parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
-      cat(nextElem(it))
-      flush.console()
+      if (nrow(data) > 99 & parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
+        cat(nextElem(it))
+        flush.console()
       }
     P.Qt <- sum(P1[, dmu] * Y1[, dmu])
     P.Qs <- sum(P1[, dmu] * Y2[, dmu])
     P.Xt <- sum(W1[, dmu] * X1[, dmu])
     P.Xs <- sum(W1[, dmu] * X2[, dmu])
-    
     L.Qt <- sum(P2[, dmu] * Y1[, dmu])
     L.Qs <- sum(P2[, dmu] * Y2[, dmu])
     L.Xt <- sum(W2[, dmu] * X1[, dmu])
     L.Xs <- sum(W2[, dmu] * X2[, dmu])
-    
     Qt <- sqrt(L.Qt * P.Qt)
     Qs <- sqrt(L.Qs * P.Qs)
     Xt <- sqrt(L.Xt * P.Xt)
-    Xs <- sqrt(L.Xs * P.Qs)
-    
+    Xs <- sqrt(L.Xs * P.Xs)
     AO <- Qt
     AI <- Xt
     TFP <- AO/AI
@@ -90,149 +77,129 @@ fish.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientati
       dmu], PRICESI = W1[, dmu], rts) * D.tfp(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, 
       YREF = YREF1, PRICESO = P2[, dmu], PRICESI = W2[, dmu], rts))
     TFPE <- TFP/MP
-    
     TFP2 <- Qs/Xs
     MP2 <- sqrt(D.tfp(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, PRICESO = P1[, 
       dmu], PRICESI = W1[, dmu], rts) * D.tfp(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, 
       YREF = YREF2, PRICESO = P2[, dmu], PRICESI = W2[, dmu], rts))
     TFPE2 <- TFP2/MP2
-    
-      PRICESO <- DO.shdu(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-      PRICESI <- DI.shdu(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-    
+    if (shadow == TRUE) {
+      PO <- DO.shdu(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
+      PI <- DI.shdu(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
+    } else {
+      PO <- NULL
+      PI <- NULL
+    }
     if (orientation == "out") {
-      OTE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-      OSE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts = "crs")/OTE
-      RE <- sqrt(DO.ome(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO = P1[, 
-        dmu], rts) * DO.ome(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, 
-        PRICESO = P2[, dmu], rts))
-      RAE <- RE/OTE
-      ROSE <- ((AO/(OTE * RAE))/AI)/MP
+      teseme.OL <- DO.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO = P2[, dmu], rts)
+      teseme.OP <- DO.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO = P1[, dmu], rts)
+      RAE <- sqrt(teseme.OL["OME"] * teseme.OP["OME"])
+      RE <- RAE * teseme.OL["OTE"]
+      ROSE <- ((AO/(teseme.OL["OTE"] * RAE))/AI)/MP
       OSME <- RAE * ROSE
-      RME <- TFPE/OTE/OSE
-      REV <- sum(Y.ini[, dmu] * P1[, dmu])
-      COST <- sum(X.ini[, dmu] * W1[, dmu])
+      RME <- TFPE/teseme.OL["OTE"]/teseme.OL["OSE"]
+      REV <- sum(Y1[, dmu] * mean.y * P1[, dmu])
+      COST <- sum(X1[, dmu] * mean.x * W1[, dmu])
       PROF <- REV/COST
       P <- REV/AO
       W <- COST/AI
       TT <- P/W
-      
-      OTE2 <- DO.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, rts)
-      OSE2 <- DO.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, rts = "crs")/OTE2
-      RE2 <- sqrt(DO.ome(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, PRICESO = P1[, 
-        dmu], rts) * DO.ome(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, 
-        PRICESO = P2[, dmu], rts))
-      RAE2 <- RE2/OTE2
-      ROSE2 <- ((Qs/(OTE2 * RAE2))/Xs)/MP2
+      teseme.O2L <- DO.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, PRICESO = P2[, dmu], rts)
+      names(teseme.O2L) <- c("OTE2", "OSE2","OME2")
+      teseme.O2P <- DO.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, PRICESO = P1[, dmu], rts)
+      names(teseme.O2P) <- c("OTE2", "OSE2","OME2")
+      RAE2 <- sqrt(teseme.O2L["OME2"] * teseme.O2P["OME2"])
+      RE2 <- RAE2 * teseme.O2L["OTE2"]
+      ROSE2 <- ((Qs/(teseme.O2L["OTE2"] * RAE2))/Xs)/MP2
       OSME2 <- RAE2 * ROSE2
-      RME2 <- TFPE2/OTE2/OSE2
-      
+      RME2 <- TFPE2/teseme.O2L["OTE2"]/teseme.O2L["OSE2"]
       res1 <- c(REV = REV, COST = COST, PROF = PROF, P = P, W = W, TT = TT, AO = AO, AI = AI, 
-        TFP = TFP, MP = MP, TFPE = TFPE, OTE = OTE, OSE = OSE, RAE = RAE, ROSE = ROSE, OSME = OSME, 
-        RME = RME, RE = RE, Qt = Qt, Qs = Qs, Xt = Xt, Xs = Xs, TFP2 = TFP2, MP2 = MP2, 
-        TFPE2 = TFPE2, RAE2 = RAE2, ROSE2 = ROSE2, OSME2 = OSME2, RME2 = RME2, RE2 = RE2, PRICESI, PRICESO)
+                TFP = TFP, MP = MP, TFPE = TFPE,  teseme.OL[1:2], RAE = unname(RAE), ROSE = unname(ROSE), OSME = unname(OSME), RME = unname(RME), 
+                RE = unname(RE), Qt = Qt, Qs = Qs, Xt = Xt, Xs = Xs, TFP2 = TFP2, MP2 = MP2, 
+                TFPE2 = TFPE2, RAE2, ROSE2 = unname(ROSE2), OSME2 = unname(OSME2), RME2 = unname(RME2),
+                RE2 = unname(RE2), PRICEI = PI, PRICEO = PO)
     } else {
       if (orientation == "in") {
-        ITE <- 1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-        ISE <- (1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, 
-          rts = "crs"))/ITE
-        CE <- sqrt((1/DI.ime(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, 
-          PRICESI = W1[, dmu], rts)) * (1/DI.ime(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, 
-          YREF = YREF1, PRICESI = W2[, dmu], rts)))
-        CAE <- CE/ITE
-        RISE <- (AO/(AI * CAE * ITE))/MP
+        teseme.IL <- DI.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESI = W2[, dmu], rts)
+        teseme.IP <- DI.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESI = W1[, dmu], rts)
+        CAE <- sqrt(teseme.IL["IME"] * teseme.IP["IME"])
+        CE <- CAE * teseme.IL["ITE"]
+        RISE <- (AO/(AI * CAE * teseme.IL["ITE"]))/MP
         ISME <- CAE * RISE
-        RME <- TFPE/ITE/ISE
-        REV <- sum(Y.ini[, dmu] * P1[, dmu])
-        COST <- sum(X.ini[, dmu] * W1[, dmu])
+        RME <- TFPE/teseme.IL["ITE"]/teseme.IL["ISE"]
+        REV <- sum(Y1[, dmu] * mean.y * P1[, dmu])
+        COST <- sum(X1[, dmu] * mean.x * W1[, dmu])
         PROF <- REV/COST
         P <- REV/AO
         W <- COST/AI
         TT <- P/W
-        
-        ITE2 <- 1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, rts)
-        ISE2 <- (1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, 
-          rts = "crs"))/ITE2
-        CE2 <- sqrt((1/DI.ime(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, 
-          PRICESI = W1[, dmu], rts)) * (1/DI.ime(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, 
-          YREF = YREF2, PRICESI = W2[, dmu], rts)))
-        CAE2 <- CE2/ITE2
-        RISE2 <- (Qs/(Xs * CAE2 * ITE2))/MP2
+        teseme.I2L <- DI.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, PRICESI = W2[, dmu], rts)
+        names(teseme.I2L) <- c("ITE2", "ISE2","IME2")
+        teseme.I2P <- DI.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, PRICESI = W1[, dmu], rts)
+        names(teseme.I2P) <- c("ITE2", "ISE2","IME2")
+        CAE2 <- sqrt(teseme.I2L["IME2"] * teseme.I2P["IME2"])
+        CE2 <- CAE2 * teseme.I2L["ITE2"]
+        RISE2 <- (Qs/(Xs * CAE2 * teseme.I2L["ITE2"]))/MP2
         ISME2 <- CAE2 * RISE2
-        RME2 <- TFPE2/ITE2/ISE2
-        
+        RME2 <- TFPE2/teseme.I2L["ITE2"]/teseme.I2L["ISE2"]
         res1 <- c(REV = REV, COST = COST, PROF = PROF, P = P, W = W, TT = TT, AO = AO, AI = AI, 
-          TFP = TFP, MP = MP, TFPE = TFPE, ITE = ITE, ISE = ISE, CAE = CAE, RISE = RISE, 
-          ISME = ISME, RME = RME, CE = CE, Qt = Qt, Qs = Qs, Xt = Xt, Xs = Xs, TFP2 = TFP2, 
-          MP2 = MP2, TFPE2 = TFPE2, CAE2 = CAE2, RISE2 = RISE2, ISME2 = ISME2, RME2 = RME2, 
-          CE2 = CE2, PRICESI, PRICESO)
+                  TFP = TFP, MP = MP, TFPE = TFPE, teseme.IL[1:2], CAE = unname(CAE), RISE = unname(RISE), ISME = unname(ISME),
+                  RME = unname(RME), CE = unname(CE), Qt = Qt, Qs = Qs, Xt = Xt, Xs = Xs, TFP2 = TFP2, 
+                  MP2 = MP2, TFPE2 = TFPE2, CAE2, RISE2 = unname(RISE2), ISME2 = unname(ISME2),
+                  RME2 = unname(RME2), CE2 = unname(CE2), PRICEI = PI, PRICEO = PO)
       } else {
-        OTE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-        OSE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts = "crs")/OTE
-        RE <- sqrt(DO.ome(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, 
-          PRICESO = P1[, dmu], rts) * DO.ome(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, 
-          YREF = YREF1, PRICESO = P2[, dmu], rts))
-        RAE <- RE/OTE
-        ROSE <- ((AO/(OTE * RAE))/AI)/MP
+        teseme.OL <- DO.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO = P2[, dmu], rts)
+        teseme.OP <- DO.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESO = P1[, dmu], rts)
+        RAE <- sqrt(teseme.OL["OME"] * teseme.OP["OME"])
+        RE <- RAE * teseme.OL["OTE"]
+        ROSE <- ((AO/(teseme.OL["OTE"] * RAE))/AI)/MP
         OSME <- RAE * ROSE
-        RME <- TFPE/OTE/OSE
-        ITE <- 1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, rts)
-        ISE <- (1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, 
-          rts = "crs"))/ITE
-        CE <- sqrt((1/DI.ime(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, 
-          PRICESI = W1[, dmu], rts)) * (1/DI.ime(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, 
-          YREF = YREF1, PRICESI = W2[, dmu], rts)))
-        CAE <- CE/ITE
-        RISE <- (AO/(AI * CAE * ITE))/MP
+        RME <- TFPE/teseme.OL["OTE"]/teseme.OL["OSE"]
+        teseme.IL <- DI.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESI = W2[, dmu], rts)
+        teseme.IP <- DI.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREF1, YREF = YREF1, PRICESI = W1[, dmu], rts)
+        CAE <- sqrt(teseme.IL["IME"] * teseme.IP["IME"])
+        CE <- CAE * teseme.IL["ITE"]
+        RISE <- (AO/(AI * CAE * teseme.IL["ITE"]))/MP
         ISME <- CAE * RISE
-        OTE.ITE <- sqrt(OTE * ITE)
-        OSE.ISE <- sqrt(OSE * ISE)
+        teseme.OIL <- sqrt(teseme.OL * teseme.IL)
+        names(teseme.OIL)[1:2] <- c("OTE.ITE", "OSE.ISE")
         RAE.CAE <- sqrt(RAE * CAE)
         ROSE.RISE <- sqrt(ROSE * RISE)
-        OSME.ISME <- sqrt(RAE.CAE * ROSE.RISE)
+        OSME.ISME <- RAE.CAE * ROSE.RISE
         RE.CE <- sqrt(RE * CE)
-        REV <- sum(Y.ini[, dmu] * P1[, dmu])
-        COST <- sum(X.ini[, dmu] * W1[, dmu])
+        REV <- sum(Y1[, dmu] * mean.y * P1[, dmu])
+        COST <- sum(X1[, dmu] * mean.x * W1[, dmu])
         PROF <- REV/COST
         P <- REV/AO
         W <- COST/AI
         TT <- P/W
-        
-        OTE2 <- DO.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, rts)
-        OSE2 <- DO.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, rts = "crs")/OTE2
-        RE2 <- sqrt(DO.ome(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, 
-          PRICESO = P1[, dmu], rts) * DO.ome(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, 
-          YREF = YREF2, PRICESO = P2[, dmu], rts))
-        RAE2 <- RE2/OTE2
-        ROSE2 <- ((Qs/(OTE2 * RAE2))/Xs)/MP2
+        teseme.O2L <- DO.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, PRICESO = P2[, dmu], rts)
+        names(teseme.O2L) <- c("OTE2", "OSE2","OME2")
+        teseme.O2P <- DO.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, PRICESO = P1[, dmu], rts)
+        names(teseme.O2P) <- c("OTE2", "OSE2","OME2")
+        RAE2 <- sqrt(teseme.O2L["OME2"] * teseme.O2P["OME2"])
+        RE2 <- RAE2 * teseme.O2L["OTE2"]
+        ROSE2 <- ((Qs/(teseme.O2L["OTE2"] * RAE2))/Xs)/MP2
         OSME2 <- RAE2 * ROSE2
-        RME2 <- TFPE2/OTE2/OSE2
-        
-        ITE2 <- 1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, rts)
-        ISE2 <- (1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, 
-          rts = "crs"))/ITE2
-        CE2 <- sqrt((1/DI.ime(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, 
-          PRICESI = W1[, dmu], rts)) * (1/DI.ime(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, 
-          YREF = YREF2, PRICESI = W2[, dmu], rts)))
-        CAE2 <- CE2/ITE2
-        RISE2 <- (Qs/(Xs * CAE2 * ITE2))/MP2
+        RME2 <- TFPE2/teseme.O2L["OTE2"]/teseme.O2L["OSE2"]
+        teseme.I2L <- DI.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, PRICESI = W2[, dmu], rts)
+        names(teseme.I2L) <- c("ITE2", "ISE2","IME2")
+        teseme.I2P <- DI.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREF2, YREF = YREF2, PRICESI = W1[, dmu], rts)
+        names(teseme.I2P) <- c("ITE2", "ISE2","IME2")
+        CAE2 <- sqrt(teseme.I2L["IME2"] * teseme.I2P["IME2"])
+        CE2 <- CAE2 * teseme.I2L["ITE2"]
+        RISE2 <- (Qs/(Xs * CAE2 * teseme.I2L["ITE2"]))/MP2
         ISME2 <- CAE2 * RISE2
-        RME2 <- TFPE2/ITE2/ISE2
-        
-        OTE2.ITE2 <- sqrt(OTE2 * ITE2)
-        OSE2.ISE2 <- sqrt(OSE2 * ISE2)
+        teseme.OI2L <- sqrt(teseme.O2L * teseme.I2L)
         RE2.CE2 <- sqrt(RE2 * CE2)
         RAE2.CAE2 <- sqrt(RAE2 * CAE2)
         ROSE2.RISE2 <- sqrt(ROSE2 * RISE2)
-        OSME2.ISME2 <- sqrt(RAE2.CAE2 * ROSE2.RISE2)
-        
-        
+        OSME2.ISME2 <- RAE2.CAE2 * ROSE2.RISE2
         res1 <- c(REV = REV, COST = COST, PROF = PROF, P = P, W = W, TT = TT, AO = AO, AI = AI, 
-          TFP = TFP, MP = MP, TFPE = TFPE, OTE.ITE = OTE.ITE, OSE.ISE = OSE.ISE, RAE.CAE = RAE.CAE, 
-          ROSE.RISE = ROSE.RISE, OSME.ISME = OSME.ISME, RME = RME, RE.CE = RE.CE, Qt = Qt, 
-          Qs = Qs, Xt = Xt, Xs = Xs, TFP2 = TFP2, MP2 = MP2, TFPE2 = TFPE2, RAE2.CAE2 = RAE2.CAE2, 
-          ROSE2.RISE2 = ROSE2.RISE2, OSME2.ISME2 = OSME2.ISME2, RME2 = RME2, RE2.CE2 = RE2.CE2, 
-          PRICESI, PRICESO)
+                  TFP = TFP, MP = MP, TFPE = TFPE, teseme.OIL[1:2], RAE.CAE = unname(RAE.CAE), ROSE.RISE = unname(ROSE.RISE), 
+                  OSME.ISME = unname(OSME.ISME), RME = unname(RME), RE.CE = unname(RE.CE), Qt = Qt, 
+                  Qs = Qs, Xt = Xt, Xs = Xs, TFP2 = TFP2, MP2 = MP2, TFPE2 = TFPE2, RAE2.CAE2 = unname(RAE2.CAE2), 
+                  ROSE2.RISE2 = unname(ROSE2.RISE2), OSME2.ISME2 = unname(OSME2.ISME2), RME2 = unname(RME2),
+                  RE2.CE2 = unname(RE2.CE2), PRICEI = PI, PRICEO = PO)
       }
     }
     return(res1)
@@ -242,7 +209,7 @@ fish.1 <- function(data, data.in, step1, ano, year.vec, tech.reg, rts, orientati
 
 ## Fisher without technical change
 
-fish.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parallel, scaled, itt, it) {
+fish.2 <- function(data, step1, ano, year.vec, rts, orientation, parallel, mean.x, mean.y, itt, it, shadow) {
   ## period (Xt1, Yt1)
   X1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
   Y1 <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
@@ -270,40 +237,26 @@ fish.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parall
   } else {
     t(as.matrix(data[data[, step1$time.var] == year.vec[ano - 1], step1$w.vars]))
   }
-  
-  ## unscaled data
-  if (scaled == TRUE) {
-    Y.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$y.vars]))
-    X.ini <- t(as.matrix(data.in[data.in[, step1$time.var] == year.vec[ano], step1$x.vars]))
-  } else {
-    Y.ini <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$y.vars]))
-    X.ini <- t(as.matrix(data[data[, step1$time.var] == year.vec[ano], step1$x.vars]))
-  }
-  
   XREFs <- t(as.matrix(data[, step1$x.vars]))
   YREFs <- t(as.matrix(data[, step1$y.vars]))
-  
   res2 <- foreach(dmu = 1:length(data[data[, step1$time.var] == year.vec[ano], step1$id.var]), 
     .combine = rbind, .packages = c("lpSolveAPI")) %dopar% {
-    if (parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
-      cat(nextElem(it))
-      flush.console()
+      if (nrow(data) > 99 & parallel == FALSE & ((ano-1)*nrow(data[data[, step1$time.var] == year.vec[ano], ])+dmu) %in% itt) {
+        cat(nextElem(it))
+        flush.console()
       }
     P.Qt <- sum(P1[, dmu] * Y1[, dmu])
     P.Qs <- sum(P1[, dmu] * Y2[, dmu])
     P.Xt <- sum(W1[, dmu] * X1[, dmu])
     P.Xs <- sum(W1[, dmu] * X2[, dmu])
-    
     L.Qt <- sum(P2[, dmu] * Y1[, dmu])
     L.Qs <- sum(P2[, dmu] * Y2[, dmu])
     L.Xt <- sum(W2[, dmu] * X1[, dmu])
     L.Xs <- sum(W2[, dmu] * X2[, dmu])
-    
     Qt <- sqrt(L.Qt * P.Qt)
     Qs <- sqrt(L.Qs * P.Qs)
     Xt <- sqrt(L.Xt * P.Xt)
-    Xs <- sqrt(L.Xs * P.Qs)
-    
+    Xs <- sqrt(L.Xs * P.Xs)
     AO <- Qt
     AI <- Xt
     TFP <- AO/AI
@@ -311,149 +264,129 @@ fish.2 <- function(data, data.in, step1, ano, year.vec, rts, orientation, parall
       dmu], PRICESI = W1[, dmu], rts) * D.tfp(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, 
       YREF = YREFs, PRICESO = P2[, dmu], PRICESI = W2[, dmu], rts))
     TFPE <- TFP/MP
-    
     TFP2 <- Qs/Xs
     MP2 <- sqrt(D.tfp(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, PRICESO = P1[, 
       dmu], PRICESI = W1[, dmu], rts) * D.tfp(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, 
       YREF = YREFs, PRICESO = P2[, dmu], PRICESI = W2[, dmu], rts))
     TFPE2 <- TFP2/MP2
-    
-      PRICESO <- DO.shdu(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, rts)
-      PRICESI <- DI.shdu(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, rts)
-    
+    if (shadow == TRUE) {
+      PO <- DO.shdu(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, rts)
+      PI <- DI.shdu(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, rts)
+    } else {
+      PO <- NULL
+      PI <- NULL
+    }
     if (orientation == "out") {
-      OTE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, rts)
-      OSE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, rts = "crs")/OTE
-      RE <- sqrt(DO.ome(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, PRICESO = P1[, 
-        dmu], rts) * DO.ome(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, 
-        PRICESO = P2[, dmu], rts))
-      RAE <- RE/OTE
-      ROSE <- ((AO/(OTE * RAE))/AI)/MP
+      teseme.OL <- DO.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, PRICESO = P2[, dmu], rts)
+      teseme.OP <- DO.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, PRICESO = P1[, dmu], rts)
+      RAE <- sqrt(teseme.OL["OME"] * teseme.OP["OME"])
+      RE <- RAE * teseme.OL["OTE"]
+      ROSE <- ((AO/(teseme.OL["OTE"] * RAE))/AI)/MP
       OSME <- RAE * ROSE
-      RME <- TFPE/OTE/OSE
-      REV <- sum(Y.ini[, dmu] * P1[, dmu])
-      COST <- sum(X.ini[, dmu] * W1[, dmu])
+      RME <- TFPE/teseme.OL["OTE"]/teseme.OL["OSE"]
+      REV <- sum(Y1[, dmu] * mean.y * P1[, dmu])
+      COST <- sum(X1[, dmu] * mean.x * W1[, dmu])
       PROF <- REV/COST
       P <- REV/AO
       W <- COST/AI
       TT <- P/W
-      
-      OTE2 <- DO.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, rts)
-      OSE2 <- DO.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, rts = "crs")/OTE2
-      RE2 <- sqrt(DO.ome(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, PRICESO = P1[, 
-        dmu], rts) * DO.ome(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, 
-        PRICESO = P2[, dmu], rts))
-      RAE2 <- RE2/OTE2
-      ROSE2 <- ((Qs/(OTE2 * RAE2))/Xs)/MP2
+      teseme.O2L <- DO.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, PRICESO = P2[, dmu], rts)
+      names(teseme.O2L) <- c("OTE2", "OSE2","OME2")
+      teseme.O2P <- DO.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, PRICESO = P1[, dmu], rts)
+      names(teseme.O2P) <- c("OTE2", "OSE2","OME2")
+      RAE2 <- sqrt(teseme.O2L["OME2"] * teseme.O2P["OME2"])
+      RE2 <- RAE2 * teseme.O2L["OTE2"]
+      ROSE2 <- ((Qs/(teseme.O2L["OTE2"] * RAE2))/Xs)/MP2
       OSME2 <- RAE2 * ROSE2
-      RME2 <- TFPE2/OTE2/OSE2
-      
+      RME2 <- TFPE2/teseme.O2L["OTE2"]/teseme.O2L["OSE2"]
       res1 <- c(REV = REV, COST = COST, PROF = PROF, P = P, W = W, TT = TT, AO = AO, AI = AI, 
-        TFP = TFP, MP = MP, TFPE = TFPE, OTE = OTE, OSE = OSE, RAE = RAE, ROSE = ROSE, OSME = OSME, 
-        RME = RME, RE = RE, Qt = Qt, Qs = Qs, Xt = Xt, Xs = Xs, TFP2 = TFP2, MP2 = MP2, 
-        TFPE2 = TFPE2, RAE2 = RAE2, ROSE2 = ROSE2, OSME2 = OSME2, RME2 = RME2, RE2 = RE2, 
-        PRICESI, PRICESO)
+                TFP = TFP, MP = MP, TFPE = TFPE,  teseme.OL[1:2], RAE = unname(RAE), ROSE = unname(ROSE), OSME = unname(OSME), RME = unname(RME), 
+                RE = unname(RE), Qt = Qt, Qs = Qs, Xt = Xt, Xs = Xs, TFP2 = TFP2, MP2 = MP2, 
+                TFPE2 = TFPE2, RAE2, ROSE2 = unname(ROSE2), OSME2 = unname(OSME2), RME2 = unname(RME2),
+                RE2 = unname(RE2), PRICEI = PI, PRICEO = PO)
     } else {
       if (orientation == "in") {
-        ITE <- 1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, rts)
-        ISE <- (1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, 
-          rts = "crs"))/ITE
-        CE <- sqrt((1/DI.ime(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, 
-          PRICESI = W1[, dmu], rts)) * (1/DI.ime(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, 
-          YREF = YREFs, PRICESI = W2[, dmu], rts)))
-        CAE <- CE/ITE
-        RISE <- (AO/(AI * CAE * ITE))/MP
+        teseme.IL <- DI.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, PRICESI = W2[, dmu], rts)
+        teseme.IP <- DI.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, PRICESI = W1[, dmu], rts)
+        CAE <- sqrt(teseme.IL["IME"] * teseme.IP["IME"])
+        CE <- CAE * teseme.IL["ITE"]
+        RISE <- (AO/(AI * CAE * teseme.IL["ITE"]))/MP
         ISME <- CAE * RISE
-        RME <- TFPE/ITE/ISE
-        REV <- sum(Y.ini[, dmu] * P1[, dmu])
-        COST <- sum(X.ini[, dmu] * W1[, dmu])
+        RME <- TFPE/teseme.IL["ITE"]/teseme.IL["ISE"]
+        REV <- sum(Y1[, dmu] * mean.y * P1[, dmu])
+        COST <- sum(X1[, dmu] * mean.x * W1[, dmu])
         PROF <- REV/COST
         P <- REV/AO
         W <- COST/AI
         TT <- P/W
-        
-        ITE2 <- 1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, rts)
-        ISE2 <- (1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, 
-          rts = "crs"))/ITE2
-        CE2 <- sqrt((1/DI.ime(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, 
-          PRICESI = W1[, dmu], rts)) * (1/DI.ime(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, 
-          YREF = YREFs, PRICESI = W2[, dmu], rts)))
-        CAE2 <- CE2/ITE2
-        RISE2 <- (Qs/(Xs * CAE2 * ITE2))/MP2
+        teseme.I2L <- DI.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, PRICESI = W2[, dmu], rts)
+        names(teseme.I2L) <- c("ITE2", "ISE2","IME2")
+        teseme.I2P <- DI.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, PRICESI = W1[, dmu], rts)
+        names(teseme.I2P) <- c("ITE2", "ISE2","IME2")
+        CAE2 <- sqrt(teseme.I2L["IME2"] * teseme.I2P["IME2"])
+        CE2 <- CAE2 * teseme.I2L["ITE2"]
+        RISE2 <- (Qs/(Xs * CAE2 * teseme.I2L["ITE2"]))/MP2
         ISME2 <- CAE2 * RISE2
-        RME2 <- TFPE2/ITE2/ISE2
-        
+        RME2 <- TFPE2/teseme.I2L["ITE2"]/teseme.I2L["ISE2"]
         res1 <- c(REV = REV, COST = COST, PROF = PROF, P = P, W = W, TT = TT, AO = AO, AI = AI, 
-          TFP = TFP, MP = MP, TFPE = TFPE, ITE = ITE, ISE = ISE, CAE = CAE, RISE = RISE, 
-          ISME = ISME, RME = RME, CE = CE, Qt = Qt, Qs = Qs, Xt = Xt, Xs = Xs, TFP2 = TFP2, 
-          MP2 = MP2, TFPE2 = TFPE2, CAE2 = CAE2, RISE2 = RISE2, ISME2 = ISME2, RME2 = RME2, 
-          CE2 = CE2, PRICESI, PRICESO)
+                  TFP = TFP, MP = MP, TFPE = TFPE, teseme.IL[1:2], CAE = unname(CAE), RISE = unname(RISE), ISME = unname(ISME),
+                  RME = unname(RME), CE = unname(CE), Qt = Qt, Qs = Qs, Xt = Xt, Xs = Xs, TFP2 = TFP2, 
+                  MP2 = MP2, TFPE2 = TFPE2, CAE2, RISE2 = unname(RISE2), ISME2 = unname(ISME2),
+                  RME2 = unname(RME2), CE2 = unname(CE2), PRICEI = PI, PRICEO = PO)
       } else {
-        OTE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, rts)
-        OSE <- DO.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, rts = "crs")/OTE
-        RE <- sqrt(DO.ome(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, 
-          PRICESO = P1[, dmu], rts) * DO.ome(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, 
-          YREF = YREFs, PRICESO = P2[, dmu], rts))
-        RAE <- RE/OTE
-        ROSE <- ((AO/(OTE * RAE))/AI)/MP
+        teseme.OL <- DO.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, PRICESO = P2[, dmu], rts)
+        teseme.OP <- DO.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, PRICESO = P1[, dmu], rts)
+        RAE <- sqrt(teseme.OL["OME"] * teseme.OP["OME"])
+        RE <- RAE * teseme.OL["OTE"]
+        ROSE <- ((AO/(teseme.OL["OTE"] * RAE))/AI)/MP
         OSME <- RAE * ROSE
-        RME <- TFPE/OTE/OSE
-        ITE <- 1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, rts)
-        ISE <- (1/DI.sh(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, 
-          rts = "crs"))/ITE
-        CE <- sqrt((1/DI.ime(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, 
-          PRICESI = W1[, dmu], rts)) * (1/DI.ime(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, 
-          YREF = YREFs, PRICESI = W2[, dmu], rts)))
-        CAE <- CE/ITE
-        RISE <- (AO/(AI * CAE * ITE))/MP
+        RME <- TFPE/teseme.OL["OTE"]/teseme.OL["OSE"]
+        teseme.IL <- DI.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, PRICESI = W2[, dmu], rts)
+        teseme.IP <- DI.teseme(XOBS = X1[, dmu], YOBS = Y1[, dmu], XREF = XREFs, YREF = YREFs, PRICESI = W1[, dmu], rts)
+        CAE <- sqrt(teseme.IL["IME"] * teseme.IP["IME"])
+        CE <- CAE * teseme.IL["ITE"]
+        RISE <- (AO/(AI * CAE * teseme.IL["ITE"]))/MP
         ISME <- CAE * RISE
-        OTE.ITE <- sqrt(OTE * ITE)
-        OSE.ISE <- sqrt(OSE * ISE)
+        teseme.OIL <- sqrt(teseme.OL * teseme.IL)
+        names(teseme.OIL)[1:2] <- c("OTE.ITE", "OSE.ISE")
         RAE.CAE <- sqrt(RAE * CAE)
         ROSE.RISE <- sqrt(ROSE * RISE)
-        OSME.ISME <- sqrt(RAE.CAE * ROSE.RISE)
+        OSME.ISME <- RAE.CAE * ROSE.RISE
         RE.CE <- sqrt(RE * CE)
-        REV <- sum(Y.ini[, dmu] * P1[, dmu])
-        COST <- sum(X.ini[, dmu] * W1[, dmu])
+        REV <- sum(Y1[, dmu] * mean.y * P1[, dmu])
+        COST <- sum(X1[, dmu] * mean.x * W1[, dmu])
         PROF <- REV/COST
         P <- REV/AO
         W <- COST/AI
         TT <- P/W
-        
-        OTE2 <- DO.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, rts)
-        OSE2 <- DO.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, rts = "crs")/OTE2
-        RE2 <- sqrt(DO.ome(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, 
-          PRICESO = P1[, dmu], rts) * DO.ome(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, 
-          YREF = YREFs, PRICESO = P2[, dmu], rts))
-        RAE2 <- RE2/OTE2
-        ROSE2 <- ((Qs/(OTE2 * RAE2))/Xs)/MP2
+        teseme.O2L <- DO.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, PRICESO = P2[, dmu], rts)
+        names(teseme.O2L) <- c("OTE2", "OSE2","OME2")
+        teseme.O2P <- DO.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, PRICESO = P1[, dmu], rts)
+        names(teseme.O2P) <- c("OTE2", "OSE2","OME2")
+        RAE2 <- sqrt(teseme.O2L["OME2"] * teseme.O2P["OME2"])
+        RE2 <- RAE2 * teseme.O2L["OTE2"]
+        ROSE2 <- ((Qs/(teseme.O2L["OTE2"] * RAE2))/Xs)/MP2
         OSME2 <- RAE2 * ROSE2
-        RME2 <- TFPE2/OTE2/OSE2
-        
-        ITE2 <- 1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, rts)
-        ISE2 <- (1/DI.sh(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, 
-          rts = "crs"))/ITE2
-        CE2 <- sqrt((1/DI.ime(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, 
-          PRICESI = W1[, dmu], rts)) * (1/DI.ime(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, 
-          YREF = YREFs, PRICESI = W2[, dmu], rts)))
-        CAE2 <- CE2/ITE2
-        RISE2 <- (Qs/(Xs * CAE2 * ITE2))/MP2
+        RME2 <- TFPE2/teseme.O2L["OTE2"]/teseme.O2L["OSE2"]
+        teseme.I2L <- DI.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, PRICESI = W2[, dmu], rts)
+        names(teseme.I2L) <- c("ITE2", "ISE2","IME2")
+        teseme.I2P <- DI.teseme(XOBS = X2[, dmu], YOBS = Y2[, dmu], XREF = XREFs, YREF = YREFs, PRICESI = W1[, dmu], rts)
+        names(teseme.I2P) <- c("ITE2", "ISE2","IME2")
+        CAE2 <- sqrt(teseme.I2L["IME2"] * teseme.I2P["IME2"])
+        CE2 <- CAE2 * teseme.I2L["ITE2"]
+        RISE2 <- (Qs/(Xs * CAE2 * teseme.I2L["ITE2"]))/MP2
         ISME2 <- CAE2 * RISE2
-        RME2 <- TFPE2/ITE2/ISE2
-        
-        OTE2.ITE2 <- sqrt(OTE2 * ITE2)
-        OSE2.ISE2 <- sqrt(OSE2 * ISE2)
+        teseme.OI2L <- sqrt(teseme.O2L * teseme.I2L)
         RE2.CE2 <- sqrt(RE2 * CE2)
         RAE2.CAE2 <- sqrt(RAE2 * CAE2)
         ROSE2.RISE2 <- sqrt(ROSE2 * RISE2)
-        OSME2.ISME2 <- sqrt(RAE2.CAE2 * ROSE2.RISE2)
-
+        OSME2.ISME2 <- RAE2.CAE2 * ROSE2.RISE2
         res1 <- c(REV = REV, COST = COST, PROF = PROF, P = P, W = W, TT = TT, AO = AO, AI = AI, 
-          TFP = TFP, MP = MP, TFPE = TFPE, OTE.ITE = OTE.ITE, OSE.ISE = OSE.ISE, RAE.CAE = RAE.CAE, 
-          ROSE.RISE = ROSE.RISE, OSME.ISME = OSME.ISME, RME = RME, RE.CE = RE.CE, Qt = Qt, 
-          Qs = Qs, Xt = Xt, Xs = Xs, TFP2 = TFP2, MP2 = MP2, TFPE2 = TFPE2, RAE2.CAE2 = RAE2.CAE2, 
-          ROSE2.RISE2 = ROSE2.RISE2, OSME2.ISME2 = OSME2.ISME2, RME2 = RME2, RE2.CE2 = RE2.CE2, 
-          PRICESI, PRICESO)
+                  TFP = TFP, MP = MP, TFPE = TFPE, teseme.OIL[1:2], RAE.CAE = unname(RAE.CAE), ROSE.RISE = unname(ROSE.RISE), 
+                  OSME.ISME = unname(OSME.ISME), RME = unname(RME), RE.CE = unname(RE.CE), Qt = Qt, 
+                  Qs = Qs, Xt = Xt, Xs = Xs, TFP2 = TFP2, MP2 = MP2, TFPE2 = TFPE2, RAE2.CAE2 = unname(RAE2.CAE2), 
+                  ROSE2.RISE2 = unname(ROSE2.RISE2), OSME2.ISME2 = unname(OSME2.ISME2), RME2 = unname(RME2),
+                  RE2.CE2 = unname(RE2.CE2), PRICEI = PI, PRICEO = PO)
       }
     }
     return(res1)
@@ -473,7 +406,7 @@ print.Fisher <- function(x, digits = NULL, ...) {
   if (!is.null(x[["Shadowp"]])) {
     cat("\n\nFisher productivity shadow prices (summary):\n\n")
     print(summary(x[["Shadowp"]][-c(1:2)], digits = digits), digits = digits)
-    }
+  }
   cat("\n")
   invisible(x)
 }
