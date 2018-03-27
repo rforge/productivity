@@ -43,9 +43,9 @@ Deflated shadow prices of inputs and outputs can also be computed.}
   When the sample size is small, it is recommended to keep the \code{parallel} option to its default value (\code{FALSE}).}
   \item{cores}{Integer. Used only if \code{parallel = TRUE}. It specifies the number of cores to be used 
   for parallel computation. By default, \code{cores = max(1, detectCores() - 1)}.}
-  \item{scaled}{Logical. If \code{TRUE} (default), input and output quantities are rescaled. Setting \code{scaled = FALSE} 
-  (no rescaling of data) may lead to numerical problems while optimizing DEA models. If \code{FALSE}, a warning message is 
-  displayed when very large (>1e5) and/or very small (<1e-4) values are present in the input and output quantity variables.}
+  \item{scaled}{Logical. If \code{TRUE} (default), input and output quantities are rescaled. If \code{FALSE}, a warning message 
+  is displayed when very large (>1e5) and/or very small (<1e-4) values are present in the input and output quantity variables. 
+  See also the \code{Details} section.}
   \item{shadow}{Logical. Default is \code{FALSE} (no shadow prices are returned). When set to \code{TRUE}, input and output 
   shadow prices are returned. These shadow prices are informative only and may be subject to the linear programming solver used.}
   \item{x}{An object of class \verb{'Paasche'}.}
@@ -56,6 +56,10 @@ Deflated shadow prices of inputs and outputs can also be computed.}
 
 \details{
 When \code{tech.change} is set to \code{FALSE}, this overrides the effect of \code{tech.reg}. 
+
+Setting \code{scaled = FALSE} (no rescaling of data) may lead to numerical problems in solving LP problems while optimizing DEA models. 
+In extreme cases it may also prevent models from being optimized. Nevertheless, if the user (who is best placed to provide proper data) 
+believes that the data are at good scale it is recommended to set \code{scaled = TRUE}.
 
 The Paasche index is not transitive and therefore each firm is compared to itself in the previous period. 
 Since there is no previous period for the first period, the results for this first period are replaced by \code{NA}. 
@@ -80,18 +84,18 @@ This list contains the following items:
     \code{TFP} \tab Total Factor Productivity (TFP)\cr
     \code{MP} \tab Maximum productivity\cr
     \code{TFPE} \tab TFP efficiency score\cr
-    \code{OTE} \tab Output-oriented technical efficiency score\cr
-    \code{OSE} \tab Output-oriented scale efficiency score\cr
-    \code{RAE} \tab Revenue allocative efficiency\cr
+    \code{OTE} \tab Output-oriented technical efficiency score \emph{(when \code{orientation = "out"})}\cr
+    \code{OSE} \tab Output-oriented scale efficiency score \emph{(when \code{orientation = "out"})}\cr
+    \code{RAE} \tab Revenue allocative efficiency \emph{(when \code{orientation = "out"})}\cr
                \tab \emph{(equivalent to output-oriented mix efficiency score)}\cr
-    \code{ROSE} \tab Residual output-oriented scale efficiency score\cr
-    \code{OSME} \tab Output-oriented scale-mix efficiency score\cr
-    \code{ITE} \tab Input-oriented technical efficiency score\cr
-    \code{ISE} \tab Input-oriented scale efficiency score\cr
-    \code{CAE} \tab Cost allocative efficiency\cr
+    \code{ROSE} \tab Residual output-oriented scale efficiency score \emph{(when \code{orientation = "out"})}\cr
+    \code{OSME} \tab Output-oriented scale-mix efficiency score \emph{(when \code{orientation = "out"})}\cr
+    \code{ITE} \tab Input-oriented technical efficiency score \emph{(when \code{orientation = "in"})}\cr
+    \code{ISE} \tab Input-oriented scale efficiency score \emph{(when \code{orientation = "in"})}\cr
+    \code{CAE} \tab Cost allocative efficiency \emph{(when \code{orientation = "in"})}\cr
                \tab \emph{(equivalent to input-oriented mix efficiency score)}\cr
-    \code{RISE} \tab Residual input-oriented scale efficiency score\cr
-    \code{ISME} \tab Input-oriented scale-mix efficiency score\cr
+    \code{RISE} \tab Residual input-oriented scale efficiency score \emph{(when \code{orientation = "in"})}\cr
+    \code{ISME} \tab Input-oriented scale-mix efficiency score \emph{(when \code{orientation = "in"})}\cr
     \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE} \emph{(when \code{orientation = "in-out"})}\cr
     \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE} \emph{(when \code{orientation = "in-out"})}\cr
     \code{RAE.CAE} \tab Geometric mean of \code{RAE} and \code{CAE} \emph{(when \code{orientation = "in-out"})}\cr
@@ -136,10 +140,10 @@ Hence, all efficiency scores are greater than zero and are lower or equal to one
 
 \section{Warning}{The \code{paasche()} function will not work with unbalanced panel data.
 
-For extreme efficient observations, the problem of multiple solutions may arise and the values of 
-shadow prices may differ depending on the linear programming solver used (here \pkg{lpSolveAPI}).
+The Paasche index may be sensitive to the rescaling.
 
-The Paasche index may be sensitive to the rescaling, especially the mix efficiency component.}
+For extreme efficient observations, the problem of multiple solutions may arise and the values of 
+shadow prices may differ depending on the linear programming solver used (here \pkg{lpSolveAPI}).}
 
 \seealso{See \code{\link{Levels}} to retrieve a data frame with Paasche 
 productivity and profitability in levels and components.\cr

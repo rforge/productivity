@@ -47,9 +47,9 @@ Malmquist-\emph{it} indices can also be returned.}
   When the sample size is small, it is recommended to keep the \code{parallel} option to its default value (\code{FALSE}).}
   \item{cores}{Integer. Used only if \code{parallel = TRUE}. It specifies the number of cores to be used 
   for parallel computation. By default, \code{cores = max(1, detectCores() - 1)}.}
-  \item{scaled}{Logical. If \code{TRUE} (default), input and output quantities are rescaled. Setting \code{scaled = FALSE} 
-  (no rescaling of data) may lead to numerical problems while optimizing DEA models. If \code{FALSE}, a warning message is 
-  displayed when very large (>1e5) and/or very small (<1e-4) values are present in the input and output quantity variables.}
+  \item{scaled}{Logical. If \code{TRUE} (default), input and output quantities are rescaled. If \code{FALSE}, a warning message 
+  is displayed when very large (>1e5) and/or very small (<1e-4) values are present in the input and output quantity variables. 
+  See also the \code{Details} section.}
   \item{components}{Logical. Default is \code{FALSE} (only Hicks-Moorsteen indices are returned). When set to \code{TRUE}, 
   the components Malmquist-\emph{hs} and Malmquist-\emph{it} indices are also returned (in terms of levels, changes, along 
   with shadow prices used to compute Malmquist-\emph{hs} and Malmquist-\emph{it}).}
@@ -63,10 +63,14 @@ Malmquist-\emph{it} indices can also be returned.}
 The Hicks-Moorsteen index is the geometric average of Malmquist-\emph{hs} and Malmquist-\emph{it} indices.
 For a firm \emph{i} Malmquist-\emph{it} computes the productivity index based on the reference year \emph{t}.
 For a firm \emph{h}, Malmquist-\emph{hs} computes the productivity index based on the reference year \emph{s} (i.e. \emph{t-1}).
-Therefore, the Malmquist-\emph{it} index uses the current period prices as aggregators, while the Malmquist-\emph{hs} index uses the 
-previous period prices as aggregators.
+Therefore, the Malmquist-\emph{it} index uses the current period shadow prices as aggregators, while the Malmquist-\emph{hs} index uses the 
+previous period shadow prices as aggregators.
 
 When \code{tech.change} is set to \code{FALSE}, this overrides the effect of \code{tech.reg}. 
+
+Setting \code{scaled = FALSE} (no rescaling of data) may lead to numerical problems in solving LP problems while optimizing DEA models. 
+In extreme cases it may also prevent models from being optimized. Nevertheless, if the user (who is best placed to provide proper data) 
+believes that the data are at good scale it is recommended to set \code{scaled = TRUE}.
 
 The Hicks-Moorsteen index is not transitive and therefore each firm is compared to itself in the previous period. 
 Since there is no previous period for the first period, the results for this first period are replaced by \code{NA}. 
@@ -74,8 +78,7 @@ Since there is no previous period for the first period, the results for this fir
 
 \value{
 \code{hicksmoorsteen()} returns a list of class \verb{'HicksMoorsteen'} for which a summary of productivity and profitability 
-(when price information is specified) measures in levels and changes, as well as a summary of Malmquist-\emph{hs} and 
-Malmquist-\emph{it} indices (when \code{components = TRUE}), is printed.
+(when price information is specified) measures in levels and changes is printed.
 
 This list contains the following elements:
 
@@ -93,16 +96,16 @@ This list contains the following elements:
       \code{TFP} \tab Total Factor Productivity (TFP)\cr
       \code{MP} \tab Maximum productivity\cr
       \code{TFPE} \tab TFP efficiency score\cr
-      \code{OTE} \tab Output-oriented technical efficiency score\cr
-      \code{OSE} \tab Output-oriented scale efficiency score\cr
-      \code{OME} \tab Output-oriented mix efficiency score\cr
-      \code{ROSE} \tab Residual output-oriented scale efficiency score\cr
-      \code{OSME} \tab Output-oriented scale-mix efficiency score\cr
-      \code{ITE} \tab Input-oriented technical efficiency score\cr
-      \code{ISE} \tab Input-oriented scale efficiency score\cr
-      \code{IME} \tab Input-oriented mix efficiency score\cr
-      \code{RISE} \tab Residual input-oriented scale efficiency score\cr
-      \code{ISME} \tab Input-oriented scale-mix efficiency score\cr
+      \code{OTE} \tab Output-oriented technical efficiency score \emph{(when \code{orientation = "out"})}\cr
+      \code{OSE} \tab Output-oriented scale efficiency score \emph{(when \code{orientation = "out"})}\cr
+      \code{OME} \tab Output-oriented mix efficiency score \emph{(when \code{orientation = "out"})}\cr
+      \code{ROSE} \tab Residual output-oriented scale efficiency score \emph{(when \code{orientation = "out"})}\cr
+      \code{OSME} \tab Output-oriented scale-mix efficiency score \emph{(when \code{orientation = "out"})}\cr
+      \code{ITE} \tab Input-oriented technical efficiency score \emph{(when \code{orientation = "in"})}\cr
+      \code{ISE} \tab Input-oriented scale efficiency score \emph{(when \code{orientation = "in"})}\cr
+      \code{IME} \tab Input-oriented mix efficiency score \emph{(when \code{orientation = "in"})}\cr
+      \code{RISE} \tab Residual input-oriented scale efficiency score \emph{(when \code{orientation = "in"})}\cr
+      \code{ISME} \tab Input-oriented scale-mix efficiency score \emph{(when \code{orientation = "in"})}\cr
       \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE} \emph{(when \code{orientation = "in-out"})}\cr
       \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE} \emph{(when \code{orientation = "in-out"})}\cr
       \code{OME.IME} \tab Geometric mean of \code{OME} and \code{IME} \emph{(when \code{orientation = "in-out"})}\cr
@@ -113,15 +116,15 @@ This list contains the following elements:
   \item{Changes}{Change indices of the different elements of \code{Levels} are provided. Each change is prefixed by 
    \code{"d"} (e.g. profitability change is denoted \code{dPROF}, output-oriented efficiency change is denoted \code{dOTE}, etc.).\cr}
 
--- \bold{MalmquistHS}, returned only when \code{components = TRUE}, and containing levels, changes, and shadow prices related 
-to Malmquist-\emph{hs} index, with: 
+-- \bold{MalmquistHS}, only returned when \code{components = TRUE} and accessible using \code{\link{Levels}}, \code{\link{Changes}}, 
+and \code{\link{Shadowp}}, containing levels, changes, and shadow prices related to Malmquist-\emph{hs} index, with: 
   \item{Levels}{Several elements are provided, depending on the \code{orientation} specified.}
   \item{Changes}{Change indices of the different elements of \code{Levels}.}
   \item{Shadowp}{For each observation, input (\code{x.vars}) and output (\code{y.vars}) deflated shadow prices used to compute 
   Malmquist-\emph{hs} index are returned.\cr}
 
-\bold{-- MalmquistIT}, returned only when \code{components = TRUE}, and containing levels, changes, and shadow prices related 
-to Malmquist-\emph{it} index, with: 
+\bold{-- MalmquistIT}, only returned when \code{components = TRUE} and accessible using \code{\link{Levels}}, \code{\link{Changes}}, 
+and \code{\link{Shadowp}}, containing levels, changes, and shadow prices related to Malmquist-\emph{it} index, with: 
   \item{Levels}{Several elements are provided, depending on the \code{orientation} specified.}
   \item{Changes}{Change indices of the different elements of \code{Levels} are provided.}
   \item{Shadowp}{For each observation, input (\code{x.vars}) and output (\code{y.vars}) deflated shadow prices used to compute 
@@ -167,16 +170,16 @@ scores are computed \emph{a la} Farrell. Hence, all efficiency scores are greate
 
 \section{Warning}{The \code{hicksmoorsteen()} function will not work with unbalanced panel data.
 
+The Hicks-Moorsteen index may be sensitive to the rescaling.
+
 The productivity levels are obtained using shadow prices computed using dual (multipliers) DEA models. However, for extreme 
 efficient observations the issue of multiple solutions may arise and the values of shadow prices may differ depending on the 
-linear programming solver used (here \pkg{lpSolveAPI})
+linear programming solver used (here \pkg{lpSolveAPI}).}
 
-The Hicks-Moorsteen index may be sensitive to the rescaling, especially the mix efficiency component.}
-
-\seealso{See \code{\link{Levels}} to retrieve a data frame with Hicks-Moorsteen productivity and profitability in levels 
-and components.\cr
-See \code{\link{Changes}} to retrieve a data frame with Hicks-Moorsteen productivity and profitability changes 
-and components.\cr
+\seealso{See \code{\link{Levels}} to retrieve Hicks-Moorsteen (along with Malmquist-\emph{hs} and Malmquist-\emph{it}) productivity 
+and profitability in levels and components.\cr
+See \code{\link{Changes}} to retrieve Hicks-Moorsteen (along with Malmquist-\emph{hs} and Malmquist-\emph{it}) productivity 
+and profitability changes and components.\cr
 See \code{\link{Shadowp}} to retrieve deflated input and output shadow prices of Malmquist-\emph{hs} and Malmquist-\emph{it}.}
 
 \examples{

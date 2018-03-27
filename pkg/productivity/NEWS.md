@@ -1,5 +1,5 @@
 # productivity 1.1.0
-Changes in 'productivity' version 1.1.0 (2018-03-16)
+Changes in 'productivity' version 1.1.0 (2018-03-26)
 
 ## NEW FEATURES
 
@@ -17,7 +17,9 @@ None
 
 * {Rglpk} package is not used any more. All DEA linear programs are now implemented using the {lpSolveAPI} package.
 
-* An argument `shadow` is introduced in `fareprim()`, `fisher()`, `laspeyres()`, `lowe()`, `malm()`, and `paasche()` functions if one wants to retrieve shadow prices.
+* The argument `scaled` in `fareprim()`, `fisher()`, `laspeyres()`, `lowe()`, `malm()`and `paasche()` is now set to `TRUE` by default to avoid extreme cases where models cannot be optimized. Note that it is still possible to specify `scaled = FALSE` in functions' call.
+
+* An argument `shadow` is introduced in `fareprim()`, `fisher()`, `laspeyres()`, `lowe()`, and `paasche()` functions if one wants to retrieve shadow prices.
 
 * Dependency to `plm` package is removed.
 

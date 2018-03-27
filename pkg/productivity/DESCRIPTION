@@ -1,6 +1,6 @@
 Package: productivity
 Version: 1.1.0
-Date: 2018-03-16
+Date: 2018-03-26
 Title: Indices of Productivity Using Data Envelopment Analysis (DEA)
 Authors@R: c(
   person("K Hervé", "Dakpo", role = "aut"),
@@ -9,21 +9,21 @@ Authors@R: c(
 Maintainer: Yann Desjeux <yann.desjeux@inra.fr>
 Description:
   Levels and changes of productivity and profitability are measured with various indices.
-  In addition to the classic Malmquist productivity index, the package contains the multiplicatively 
-  complete Färe-Primont, Fisher, Laspeyres, Lowe, Paasche, and Hicks-Moorsteen indices.
+  The package contains the multiplicatively complete Färe-Primont, Fisher, Hicks-Moorsteen, 
+  Laspeyres, Lowe, and Paasche indices, as well as the classic Malmquist productivity index.
   Färe-Primont and Lowe indices verify the transitivity property and can therefore be used for 
   multilateral or multitemporal comparison.
-  Fisher, Laspeyres, Malmquist, Paasche, and Hicks-Moorsteen indices are not transitive and are 
+  Fisher, Hicks-Moorsteen, Laspeyres, Malmquist, and Paasche indices are not transitive and are 
   only to be used for binary comparison.
   All indices can also be decomposed into different components, providing insightful information 
-  on the sources of productivity and profitability improvements.
+  on the sources of productivity and profitability changes.
   In the use of Malmquist productivity index, the technological change index can be further 
   decomposed into bias technological change components.
-  The package also allows to prohibit negative technological change.
-  In the case of the Fisher, Laspeyres, Paasche, Hicks-Moorsteen and the transitive Färe-Primont 
+  The package also allows to prohibit technological regression (negative technological change).
+  In the case of the Fisher, Hicks-Moorsteen, Laspeyres, Paasche and the transitive Färe-Primont 
   and Lowe indices, it is furthermore possible to rule out technological change. 
-  Deflated shadow prices can also be obtained.
-  The package allows parallel computing as an option, depending on the user's computer configuration. 
+  Deflated shadow prices can also be obtained. Besides, the package allows parallel computing 
+  as an option, depending on the user's computer configuration. 
   All computations are carried out with the nonparametric Data Envelopment Analysis (DEA), and 
   several assumptions regarding returns to scale are available.
   All DEA linear programs are implemented using 'lp_solve'.

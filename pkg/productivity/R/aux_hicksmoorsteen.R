@@ -332,7 +332,7 @@ hm.1 <- function (data, step1, ano, year.vec, tech.reg, rts, orientation, parall
                                       Qt.hs = Qt.hs, Qs.hs = Qs.hs, Xt.hs = Xt.hs, Xs.hs = Xs.hs, TFP2.hs = TFP2.hs, MP2.hs = MP2.hs,
                                       TFPE2.hs = TFPE2.hs, teseme.I2hs["IME2.hs"], RISE2.hs =  unname(RISE2.hs), ISME2.hs =  unname(ISME2.hs),
                                       RME2.hs =  unname(RME2.hs), PRICESI.hs, PRICESO.hs, AO.it = AO.it, AI.it = AI.it, 
-                                      TFP.it = TFP.it, MP.it = MP.it, TFPE.it = TFPE.it, teseme.Oit,
+                                      TFP.it = TFP.it, MP.it = MP.it, TFPE.it = TFPE.it, teseme.Iit,
                                       RISE.it =  unname(RISE.it), ISME.it =  unname(ISME.it), RME.it =  unname(RME.it),
                                       Qt.it = Qt.it, Qs.it = Qs.it, Xt.it = Xt.it, Xs.it = Xs.it, TFP2.it = TFP2.it, MP2.it = MP2.it,
                                       TFPE2.it = TFPE2.it, teseme.I2it["IME2.it"], RISE2.it =  unname(RISE2.it), ISME2.it =  unname(ISME2.it),
@@ -755,7 +755,7 @@ hm.2 <- function (data, step1, ano, year.vec, rts, orientation, parallel,
                                       Qt.hs = Qt.hs, Qs.hs = Qs.hs, Xt.hs = Xt.hs, Xs.hs = Xs.hs, TFP2.hs = TFP2.hs, MP2.hs = MP2.hs,
                                       TFPE2.hs = TFPE2.hs, teseme.I2hs["IME2.hs"], RISE2.hs =  unname(RISE2.hs), ISME2.hs =  unname(ISME2.hs),
                                       RME2.hs =  unname(RME2.hs), PRICESI.hs, PRICESO.hs, AO.it = AO.it, AI.it = AI.it, 
-                                      TFP.it = TFP.it, MP.it = MP.it, TFPE.it = TFPE.it, teseme.Oit,
+                                      TFP.it = TFP.it, MP.it = MP.it, TFPE.it = TFPE.it, teseme.Iit,
                                       RISE.it =  unname(RISE.it), ISME.it =  unname(ISME.it), RME.it =  unname(RME.it),
                                       Qt.it = Qt.it, Qs.it = Qs.it, Xt.it = Xt.it, Xs.it = Xs.it, TFP2.it = TFP2.it, MP2.it = MP2.it,
                                       TFPE2.it = TFPE2.it, teseme.I2it["IME2.it"], RISE2.it =  unname(RISE2.it), ISME2.it =  unname(ISME2.it),
@@ -874,10 +874,9 @@ print.HicksMoorsteen <- function(x, digits = NULL, ...) {
     cat("\n")
     invisible(x)
   } else {
-    cat("\n## Hicks-Moorsteen ##\n")
-    cat("\n- Hicks-Moorsteen productivity and profitability levels (summary):\n\n")
+    cat("\nHicks-Moorsteen productivity and profitability levels (summary):\n\n")
     print(summary(x[["HicksMoorsteen"]][["Levels"]][-c(1:2)], digits = digits), digits = digits)
-    cat("\n\n- Hicks-Moorsteen productivity and profitability changes (summary):\n\n")
+    cat("\n\nHicks-Moorsteen productivity and profitability changes (summary):\n\n")
     print(summary(x[["HicksMoorsteen"]][["Changes"]][-c(1:2)], digits = digits), digits = digits)
     cat("\n")
     invisible(x)

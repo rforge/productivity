@@ -19,20 +19,20 @@ indices from any object created by either \code{\link{fareprim}}, \code{\link{fi
 
 \details{
 \itemize{
-\item An object of class \verb{'FarePrimont'} is a result of a call to \code{\link{fareprim}}
-\item An object of class \verb{'Fisher'} is a result of a call to \code{\link{fisher}}
-\item An object of class \verb{'HicksMoorsteen'} is a result of a call to \code{\link{hicksmoorsteen}}
-\item An object of class \verb{'Laspeyres'} is a result of a call to \code{\link{laspeyres}}
-\item An object of class \verb{'Lowe'} is a result of a call to \code{\link{lowe}}
-\item An object of class \verb{'Malmquist'} is a result of a call to \code{\link{malm}}
-\item An object of class \verb{'Paasche'} is a result of a call to \code{\link{paasche}}}
+\item An object of class \verb{'FarePrimont'} is a result of a call to \code{\link{fareprim}}.
+\item An object of class \verb{'Fisher'} is a result of a call to \code{\link{fisher}}.
+\item An object of class \verb{'HicksMoorsteen'} is a result of a call to \code{\link{hicksmoorsteen}}.
+\item An object of class \verb{'Laspeyres'} is a result of a call to \code{\link{laspeyres}}.
+\item An object of class \verb{'Lowe'} is a result of a call to \code{\link{lowe}}.
+\item An object of class \verb{'Malmquist'} is a result of a call to \code{\link{malm}}.
+\item An object of class \verb{'Paasche'} is a result of a call to \code{\link{paasche}}.}
 }
 
 \value{
 \itemize{
   \item In the case of Färe-Primont, Fisher, Laspeyres, Lowe, Malmquist, and Paasche indices, the function returns 
     a \bold{data frame} containing all the elements and observations included in the \code{"Changes"} component of \code{object}.
-  \item In the case of Hicksmoorsteen index:
+  \item In the case of Hicks-Moorsteen index:
     \itemize{
       \item When \code{components = FALSE} (default) in the call to \code{\link{hicksmoorsteen}}, the function returns a \bold{data frame} 
         containing all the elements and observations included in the \code{"Changes"} component of the object of class \verb{'HicksMoorsteen'}.
@@ -60,7 +60,7 @@ See also:\cr
 \dontrun{
   FAREPRIM <- fareprim(data = usagri, id.var = "States", time.var = "Years", 
   x.vars = c("q.capital", "q.land","q.labor","q.materials"), y.vars = c("q.livestock", 
-  "q.crop", "q.other"), w.vars = c("p.capital", "p.land", "p.labour", "p.materials"), 
+  "q.crop", "q.other"), w.vars = c("p.capital", "p.land", "p.labor", "p.materials"), 
   p.vars = c("p.livestock", "p.crop", "p.other"))
   Fareprim.change <- Changes(FAREPRIM)
   head(Fareprim.change)

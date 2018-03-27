@@ -55,11 +55,9 @@ of Agricultural Economics}, \bold{86}(5), 1315--1321.
 }
 
 \examples{
-\dontrun{
 head(usagri)
 str(usagri)
 summary(usagri)
-}
 }
 
 \keyword{datasets}

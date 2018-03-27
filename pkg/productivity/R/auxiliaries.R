@@ -664,12 +664,12 @@ Shadowp <- function(object, ...) {
   }
   if (is(object, c("FarePrimont", "Fisher", "Laspeyres", "Lowe", "Paasche")) & is.null(object$Shadowp)) {
     stop("No shadow prices are returned in your \"", class(object)[2], "\"", " object. 
-         Specifying 'shadow = TRUE' should be considered in the function generating the \"", class(object)[2], "\"", " object.")
+       Specifying 'shadow = TRUE' should be considered in the function generating the \"", class(object)[2], "\"", " object.")
   }
   if (is(object, "HicksMoorsteen")) {
     if (length(object) == 2) {
       stop("No shadow prices are returned in your \"", class(object)[2], "\"", " object. 
-         Specifying 'components = TRUE' should be considered in the function generating the \"", class(object)[2], "\"", " object.")
+       Specifying 'components = TRUE' should be considered in the function generating the \"", class(object)[2], "\"", " object.")
     } else {
       List <- lapply(object, function(x) x$Shadowp)
       return(List[!sapply(List,is.null)])

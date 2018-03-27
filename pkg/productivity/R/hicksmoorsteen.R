@@ -96,16 +96,16 @@ We recommend rescaling the data or set the scaled option to TRUE to avoid numeri
     names(INT) <- names(indices)
     indices <- rbind(INT, indices)
     indices <- cbind(res.hm.loop[, 1:2], indices)
-    names(indices)[3:if (dim(indices)[2] == 11) {
+    names(indices)[3:if (dim(indices)[2] == 13) {
       13
     } else {
       19
-    }] <- paste0("d", names(res.hm.loop[3:if (dim(indices)[2] == 11) {
+    }] <- paste0("d", names(res.hm.loop[3:if (dim(indices)[2] == 13) {
       13
     } else {
       19
     }]))
-    res.tfp <- list(Levels = res.hm.loop[, if (dim(res.hm.loop)[2] == 30) {1:19} else {1:13}], Changes = indices)
+    res.tfp <- list(Levels = res.hm.loop[, if ("REV" %in% colnames(res.hm.loop)) {1:19} else {1:13}], Changes = indices)
     class(res.tfp) <- c("list", "HicksMoorsteen")
   } else {
     if (dim(res.hm.loop)[2] %% 2 != 0) {
@@ -193,11 +193,11 @@ We recommend rescaling the data or set the scaled option to TRUE to avoid numeri
   names(INT) <- names(indices.hm)
   indices.hm <- rbind(INT, indices.hm)
   indices.hm <- cbind(res.hm.loop[, 1:2], indices.hm)
-  names(indices.hm)[3:if (dim(indices.hm)[2] == 11) {
+  names(indices.hm)[3:if (dim(indices.hm)[2] == 13) {
     13
   } else {
     19
-  }] <- paste0("d", names(res.hm.loop[3:if (dim(indices.hm)[2] == 11) {
+  }] <- paste0("d", names(res.hm.loop[3:if (dim(indices.hm)[2] == 13) {
     13
   } else {
     19
@@ -213,11 +213,11 @@ We recommend rescaling the data or set the scaled option to TRUE to avoid numeri
   names(INT) <- names(indices.hs)
   indices.hs <- rbind(INT, indices.hs)
   indices.hs <- cbind(res.mal_hs.loop[, 1:2], indices.hs)
-  names(indices.hs)[3:if (dim(indices.hs)[2] == 11) {
+  names(indices.hs)[3:if (dim(indices.hs)[2] == 13) {
     13
   } else {
     19
-  }] <- paste0("d", names(res.mal_hs.loop[3:if (dim(indices.hs)[2] == 11) {
+  }] <- paste0("d", names(res.mal_hs.loop[3:if (dim(indices.hs)[2] == 13) {
     13
   } else {
     19
@@ -233,30 +233,30 @@ We recommend rescaling the data or set the scaled option to TRUE to avoid numeri
   names(INT) <- names(indices.it)
   indices.it <- rbind(INT, indices.it)
   indices.it <- cbind(res.mal_it.loop[, 1:2], indices.it)
-  names(indices.it)[3:if (dim(indices.it)[2] == 11) {
+  names(indices.it)[3:if (dim(indices.it)[2] == 13) {
     13
   } else {
     19
-  }] <- paste0("d", names(res.mal_it.loop[3:if (dim(indices.it)[2] == 11) {
+  }] <- paste0("d", names(res.mal_it.loop[3:if (dim(indices.it)[2] == 13) {
     13
   } else {
     19
   }]))
-    Shadowp.hs <- cbind(data[, c(step1$id.var, step1$time.var)], if (dim(res.mal_hs.loop)[2] > 30) {
+    Shadowp.hs <- cbind(data[, c(step1$id.var, step1$time.var)], if ("REV" %in% colnames(res.hm.loop)) {
       res.mal_hs.loop[, 31:(dim(res.mal_hs.loop)[2])]
     } else {
       res.mal_hs.loop[, 25:(dim(res.mal_hs.loop)[2])]
     })
     names(Shadowp.hs) <- c(names(data[id.var]), names(data[time.var]), names(data[x.vars]), names(data[y.vars]))
-    Shadowp.it <- cbind(data[, c(step1$id.var, step1$time.var)], if (dim(res.mal_it.loop)[2] > 30) {
+    Shadowp.it <- cbind(data[, c(step1$id.var, step1$time.var)], if ("REV" %in% colnames(res.hm.loop)) {
       res.mal_it.loop[, 31:(dim(res.mal_it.loop)[2])]
     } else {
       res.mal_it.loop[, 25:(dim(res.mal_it.loop)[2])]
     })
     names(Shadowp.it) <- c(names(data[id.var]), names(data[time.var]), names(data[x.vars]), names(data[y.vars]))
-    res.tfp.hs <- list(Levels = res.mal_hs.loop[, if (dim(res.mal_hs.loop)[2] > 30) {1:19} else {1:13}], Changes = indices.hs, Shadowp = Shadowp.hs)
-    res.tfp.it <- list(Levels = res.mal_it.loop[, if (dim(res.mal_it.loop)[2] > 30) {1:19} else {1:13}], Changes = indices.it, Shadowp = Shadowp.it)
-  res.tfp.hm <- list(Levels = res.hm.loop[, if (dim(res.hm.loop)[2] > 30) {1:19} else {1:13}], Changes = indices.hm)
+    res.tfp.hs <- list(Levels = res.mal_hs.loop[, if ("REV" %in% colnames(res.hm.loop)) {1:19} else {1:13}], Changes = indices.hs, Shadowp = Shadowp.hs)
+    res.tfp.it <- list(Levels = res.mal_it.loop[, if ("REV" %in% colnames(res.hm.loop)) {1:19} else {1:13}], Changes = indices.it, Shadowp = Shadowp.it)
+  res.tfp.hm <- list(Levels = res.hm.loop[, if ("REV" %in% colnames(res.hm.loop)) {1:19} else {1:13}], Changes = indices.hm)
   res.tfp <- list(HicksMoorsteen = res.tfp.hm, MalmquistHS = res.tfp.hs, MalmquistIT = res.tfp.it)
   class(res.tfp) <- c("list", "HicksMoorsteen")
   }

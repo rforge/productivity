@@ -81,7 +81,7 @@ We recommend rescaling the data or set the scaled option to TRUE to avoid numeri
           indices <- foreach(ano = year.vec, .combine = rbind, .packages = c("doParallel")) %dopar% 
           {
             res.lo.loop[res.lo.loop[, 2] == ano, 3:20]/res.lo.loop[res.lo.loop[, 2] == year.vec[by.year], 
-            3:19]
+            3:20]
           }
         } else {
           indices <- foreach(ano = year.vec, .combine = rbind, .packages = c("doParallel")) %dopar% 

@@ -195,12 +195,12 @@ print.FarePrimont <- function(x, digits = NULL, ...) {
     digits <- max(3, getOption("digits") - 3)
   }
   cat("\nF\u00E4re-Primont productivity and profitability levels (summary):\n\n")
-  print(summary(x[["Levels"]], digits = digits), digits = digits)
+  print(summary(x[["Levels"]][-c(1:2)], digits = digits), digits = digits)
   cat("\n\nF\u00E4re-Primont productivity and profitability changes (summary):\n\n")
-  print(summary(x[["Changes"]], digits = digits), digits = digits)
+  print(summary(x[["Changes"]][-c(1:2)], digits = digits), digits = digits)
   if (!is.null(x[["Shadowp"]])) {
     cat("\n\nF\u00E4re-Primont productivity shadow prices:\n\n")
-    print(x[["Shadowp"]][-c(1:2)], digits = digits)
+    print(x[["Shadowp"]], digits = digits)
   }
   cat("\n")
   invisible(x)

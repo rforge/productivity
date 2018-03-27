@@ -42,9 +42,9 @@ Deflated shadow prices of inputs and outputs can also be computed.}
   When the sample size is small, it is recommended to keep the \code{parallel} option to its default value (\code{FALSE}).}
   \item{cores}{Integer. Used only if \code{parallel = TRUE}. It specifies the number of cores to be used 
   for parallel computation. By default, \code{cores = max(1, detectCores() - 1)}.}
-  \item{scaled}{Logical. If \code{TRUE} (default), input and output quantities are rescaled. Setting \code{scaled = FALSE} 
-  (no rescaling of data) may lead to numerical problems while optimizing DEA models. If \code{FALSE}, a warning message is 
-  displayed when very large (>1e5) and/or very small (<1e-4) values are present in the input and output quantity variables.}
+  \item{scaled}{Logical. If \code{TRUE} (default), input and output quantities are rescaled. If \code{FALSE}, a warning message 
+  is displayed when very large (>1e5) and/or very small (<1e-4) values are present in the input and output quantity variables. 
+  See also the \code{Details} section.}
   \item{by.id}{Integer specifying the reference observation used for computing the indices (Optional). 
   \code{by.id} must range between one and the total number of firms per period. See also the \code{Details} section.}
   \item{by.year}{Integer specifying the reference year used for computing the indices (Optional). 
@@ -60,13 +60,19 @@ Deflated shadow prices of inputs and outputs can also be computed.}
 \details{
 When \code{tech.change} is set to \code{FALSE}, this overrides the effect of \code{tech.reg}. 
 
+Setting \code{scaled = FALSE} (no rescaling of data) may lead to numerical problems in solving LP problems while optimizing DEA models. 
+In extreme cases it may also prevent models from being optimized. Nevertheless, if the user (who is best placed to provide proper data) 
+believes that the data are at good scale it is recommended to set \code{scaled = TRUE}.
+
 By default \code{by.id = NULL} and \code{by.year = NULL}. This means that in the computation of 
 change indices, each observation is by default compared to itself in the first period. \code{by.id} and 
 \code{by.year} allow to specify a  reference (e.g. a specific observation in a specific period). 
 If \code{by.id} is specified and \code{by.year = NULL}, then the reference observation is \code{by.id} 
 in the first period. If \code{by.year} is specified and \code{by.id = NULL}, then each observation is compared 
 to itself in the specified period of time.
-}
+
+The Lowe index is also a fixed-weights-based TFP index as the Färe-Primont. The Lowe index uses the average observed 
+input and output prices as aggregators.}
 
 \value{
 \code{lowe()} returns a list of class \verb{'Lowe'} for which a summary of productivity and profitability 
@@ -87,22 +93,25 @@ This list contains the following items:
     \code{TFP} \tab Total Factor Productivity (TFP)\cr
     \code{MP} \tab Maximum productivity\cr
     \code{TFPE} \tab TFP efficiency score\cr
-    \code{OTE} \tab Output-oriented technical efficiency score\cr
-    \code{OSE} \tab Output-oriented scale efficiency score\cr
-    \code{OME} \tab Output-oriented mix efficiency score\cr
-    \code{ROSE} \tab Residual output-oriented scale efficiency score\cr
-    \code{OSME} \tab Output-oriented scale-mix efficiency score\cr
-    \code{ITE} \tab Input-oriented technical efficiency score\cr
-    \code{ISE} \tab Input-oriented scale efficiency score\cr
-    \code{IME} \tab Input-oriented mix efficiency score\cr
-    \code{RISE} \tab Residual input-oriented scale efficiency score\cr
-    \code{ISME} \tab Input-oriented scale-mix efficiency score\cr
+    \code{OTE} \tab Output-oriented technical efficiency score \emph{(when \code{orientation = "out"})}\cr
+    \code{OSE} \tab Output-oriented scale efficiency score \emph{(when \code{orientation = "out"})}\cr
+    \code{OME} \tab Output-oriented mix efficiency score \emph{(when \code{orientation = "out"})}\cr
+    \code{ROSE} \tab Residual output-oriented scale efficiency score \emph{(when \code{orientation = "out"})}\cr
+    \code{OSME} \tab Output-oriented scale-mix efficiency score \emph{(when \code{orientation = "out"})}\cr
+    \code{ITE} \tab Input-oriented technical efficiency score \emph{(when \code{orientation = "in"})}\cr
+    \code{ISE} \tab Input-oriented scale efficiency score \emph{(when \code{orientation = "in"})}\cr
+    \code{IME} \tab Input-oriented mix efficiency score \emph{(when \code{orientation = "in"})}\cr
+    \code{RISE} \tab Residual input-oriented scale efficiency score \emph{(when \code{orientation = "in"})}\cr
+    \code{ISME} \tab Input-oriented scale-mix efficiency score \emph{(when \code{orientation = "in"})}\cr
     \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE} \emph{(when \code{orientation = "in-out"})}\cr
     \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE} \emph{(when \code{orientation = "in-out"})}\cr
     \code{OME.IME} \tab Geometric mean of \code{OME} and \code{IME} \emph{(when \code{orientation = "in-out"})}\cr
     \code{ROSE.RISE} \tab Geometric mean of \code{ROSE} and \code{RISE} \emph{(when \code{orientation = "in-out"})}\cr
     \code{OSME.ISME} \tab Geometric mean of \code{OSME} and \code{ISME} \emph{(when \code{orientation = "in-out"})}\cr
-    \code{RME} \tab Residual mix efficiency score}
+    \code{RME} \tab Residual mix efficiency score\cr
+    \code{RE} \tab Revenue efficiency \emph{(when \code{orientation = "out"})}\cr
+    \code{CE} \tab Cost efficiency \emph{(when \code{orientation = "in"})}\cr
+    \code{RE.CE} \tab Geometric mean of \code{RE} and \code{CE} \emph{(when \code{orientation = "in-out"})}}
 }
 
 \item{Changes}{Change indices of the different elements of \code{Levels} are provided. 
@@ -144,10 +153,10 @@ Hence, all efficiency scores are greater than zero and are lower or equal to one
 
 \section{Warning}{The \code{lowe()} function will not work with unbalanced panel data.
 
-For extreme efficient observations, the problem of multiple solutions may arise and the values of 
-shadow prices may differ depending on the linear programming solver used (here \pkg{lpSolveAPI}).
+The Lowe index may be sensitive to the rescaling.
 
-The Lowe index may be sensitive to the rescaling, especially the mix efficiency component.}
+For extreme efficient observations, the problem of multiple solutions may arise and the values of 
+shadow prices may differ depending on the linear programming solver used (here \pkg{lpSolveAPI}).}
 
 \seealso{See \code{\link{Levels}} to retrieve a data frame with Lowe 
 productivity and profitability in levels and components.\cr
