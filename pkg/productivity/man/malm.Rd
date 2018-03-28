@@ -65,6 +65,7 @@ This list contains the following items:
   The prefix "c" stands for constant returns to scale (\code{"crs"}) and "v" for 
   all other types of returns to scale (i.e. \code{"vrs"}, \code{"nirs"}, or \code{"ndrs"}).
   The suffix "o" means output-oriented while "i" refers to input-oriented.
+  
   The distance function names are displayed with three digits: 
   \emph{(i)} the first digit represents the period of the reference technology, 
   \emph{(ii)} the second digit represents the period of the inputs, and 
@@ -81,20 +82,23 @@ depending on the orientation.
     \code{obtech} \tab Output-biased technological change\cr 
     \code{ibtech} \tab Input-biased technological change\cr
     \code{matech} \tab Magnitude component\cr
-    \code{pure.out.effch} \tab Pure output efficiency change \emph{(when \code{rts != "crs"} and \code{orientation = "out"})}\cr
-    \code{out.scalech} \tab Output scale efficiency change \emph{(when \code{rts != "crs"} and \code{orientation = "out"})}\cr
-    \code{pure.inp.effch} \tab Pure input efficiency change \emph{(when \code{rts != "crs"} and \code{orientation = "in"})}\cr
-    \code{inp.scalech} \tab Input scale efficiency change \emph{(when \code{rts != "crs"} and \code{orientation = "in"})}}
-
+    \code{pure.out.effch} \tab Pure output efficiency change\cr
+                          \tab \code{    } \emph{(when \code{rts != "crs"} and \code{orientation = "out"})}\cr
+    \code{out.scalech} \tab Output scale efficiency change\cr
+                       \tab \code{    } \emph{(when \code{rts != "crs"} and \code{orientation = "out"})}\cr
+    \code{pure.inp.effch} \tab Pure input efficiency change\cr
+                          \tab \code{    } \emph{(when \code{rts != "crs"} and \code{orientation = "in"})}\cr
+    \code{inp.scalech} \tab Input scale efficiency change\cr
+                       \tab \code{    } \emph{(when \code{rts != "crs"} and \code{orientation = "in"})}}}
+  
 \bold{Note that:}
 \enumerate{
 \item{\code{obtech} (Output-biased technological change), \code{ibtech} (Input-biased technological change), 
   and \code{matech} (Magnitude component) are components of technological change (\code{tech}).}
 \item{\code{pure.out.effch} (Pure output efficiency change) and \code{out.scalech} (Output scale efficiency change) 
-  are components of efficiency change (\code{effch}), when \code{rts != "crs"} and \code{orientation = "out"}.}
+  are components of efficiency change (\code{effch}).}
 \item{\code{pure.inp.effch} (Pure input efficiency change), and \code{inp.scalech} (Input scale efficiency change) 
-  are components of efficiency change (\code{effch}), when \code{rts != "crs"} and \code{orientation = "in"}.\cr}}
-}
+  are components of efficiency change (\code{effch}).}}
 
 From an object of class \verb{'Malmquist'} obtained from \code{malm()}, the 
 \itemize{

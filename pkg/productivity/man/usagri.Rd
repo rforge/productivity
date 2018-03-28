@@ -32,8 +32,7 @@ Alabama 1996 = 1.}
     - \code{p.capital}: \tab Capital services' relative price (reference is 1 = Alabama 1996).\cr
     - \code{p.land}: \tab Land service flows' relative price (reference is 1 = Alabama 1996).\cr
     - \code{p.labor}: \tab Labor services' relative price (reference is 1 = Alabama 1996).\cr
-    - \code{p.materials}: \tab Total intermediate inputs' relative price (reference is 1 = Alabama 1996).\cr
-  }
+    - \code{p.materials}: \tab Total intermediate inputs' relative price (reference is 1 = Alabama 1996).}
 }
 
 \details{

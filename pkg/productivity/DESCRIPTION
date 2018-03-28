@@ -19,15 +19,15 @@ Description:
   on the sources of productivity and profitability changes.
   In the use of Malmquist productivity index, the technological change index can be further 
   decomposed into bias technological change components.
-  The package also allows to prohibit technological regression (negative technological change).
-  In the case of the Fisher, Hicks-Moorsteen, Laspeyres, Paasche and the transitive Färe-Primont 
+  The package also allows to prohibit technological regression (negative technological change). In 
+  the case of the Fisher, Hicks-Moorsteen, Laspeyres, Paasche and the transitive Färe-Primont 
   and Lowe indices, it is furthermore possible to rule out technological change. 
-  Deflated shadow prices can also be obtained. Besides, the package allows parallel computing 
-  as an option, depending on the user's computer configuration. 
+  Deflated shadow prices can also be obtained. Besides, the package allows parallel computing as 
+  an option, depending on the user's computer configuration. 
   All computations are carried out with the nonparametric Data Envelopment Analysis (DEA), and 
   several assumptions regarding returns to scale are available.
   All DEA linear programs are implemented using 'lp_solve'.
-Depends: R (>= 3.0.0)
+Depends: R (>= 2.15.3)
 BugReports: https://r-forge.r-project.org/tracker/?group_id=2245
 Imports: lpSolveAPI, doParallel, foreach, iterators, methods
 License: GPL-3

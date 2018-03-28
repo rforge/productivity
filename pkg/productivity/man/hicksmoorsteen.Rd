@@ -68,9 +68,8 @@ previous period shadow prices as aggregators.
 
 When \code{tech.change} is set to \code{FALSE}, this overrides the effect of \code{tech.reg}. 
 
-Setting \code{scaled = FALSE} (no rescaling of data) may lead to numerical problems in solving LP problems while optimizing DEA models. 
-In extreme cases it may also prevent models from being optimized. Nevertheless, if the user (who is best placed to provide proper data) 
-believes that the data are at good scale it is recommended to set \code{scaled = TRUE}.
+Setting \code{scaled = FALSE} (no rescaling of data) may lead to numerical problems in solving LP 
+problems while optimizing DEA models. In extreme cases it may also prevent models from being optimized.
 
 The Hicks-Moorsteen index is not transitive and therefore each firm is compared to itself in the previous period. 
 Since there is no previous period for the first period, the results for this first period are replaced by \code{NA}. 
@@ -96,23 +95,23 @@ This list contains the following elements:
       \code{TFP} \tab Total Factor Productivity (TFP)\cr
       \code{MP} \tab Maximum productivity\cr
       \code{TFPE} \tab TFP efficiency score\cr
-      \code{OTE} \tab Output-oriented technical efficiency score \emph{(when \code{orientation = "out"})}\cr
-      \code{OSE} \tab Output-oriented scale efficiency score \emph{(when \code{orientation = "out"})}\cr
-      \code{OME} \tab Output-oriented mix efficiency score \emph{(when \code{orientation = "out"})}\cr
-      \code{ROSE} \tab Residual output-oriented scale efficiency score \emph{(when \code{orientation = "out"})}\cr
-      \code{OSME} \tab Output-oriented scale-mix efficiency score \emph{(when \code{orientation = "out"})}\cr
-      \code{ITE} \tab Input-oriented technical efficiency score \emph{(when \code{orientation = "in"})}\cr
-      \code{ISE} \tab Input-oriented scale efficiency score \emph{(when \code{orientation = "in"})}\cr
-      \code{IME} \tab Input-oriented mix efficiency score \emph{(when \code{orientation = "in"})}\cr
-      \code{RISE} \tab Residual input-oriented scale efficiency score \emph{(when \code{orientation = "in"})}\cr
-      \code{ISME} \tab Input-oriented scale-mix efficiency score \emph{(when \code{orientation = "in"})}\cr
-      \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE} \emph{(when \code{orientation = "in-out"})}\cr
-      \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE} \emph{(when \code{orientation = "in-out"})}\cr
-      \code{OME.IME} \tab Geometric mean of \code{OME} and \code{IME} \emph{(when \code{orientation = "in-out"})}\cr
-      \code{ROSE.RISE} \tab Geometric mean of \code{ROSE} and \code{RISE} \emph{(when \code{orientation = "in-out"})}\cr
-      \code{OSME.ISME} \tab Geometric mean of \code{OSME} and \code{ISME} \emph{(when \code{orientation = "in-out"})}\cr
-      \code{RME} \tab Residual mix efficiency score}
-}
+      \code{OTE} \tab Output-oriented technical efficiency score \emph{(\code{orientation = "out"})}\cr
+      \code{OSE} \tab Output-oriented scale efficiency score \emph{(\code{orientation = "out"})}\cr
+      \code{OME} \tab Output-oriented mix efficiency score \emph{(\code{orientation = "out"})}\cr
+      \code{ROSE} \tab Residual output-oriented scale efficiency score \emph{(\code{orientation = "out"})}\cr
+      \code{OSME} \tab Output-oriented scale-mix efficiency score \emph{(\code{orientation = "out"})}\cr
+      \code{ITE} \tab Input-oriented technical efficiency score \emph{(\code{orientation = "in"})}\cr
+      \code{ISE} \tab Input-oriented scale efficiency score \emph{(\code{orientation = "in"})}\cr
+      \code{IME} \tab Input-oriented mix efficiency score \emph{(\code{orientation = "in"})}\cr
+      \code{RISE} \tab Residual input-oriented scale efficiency score \emph{(\code{orientation = "in"})}\cr
+      \code{ISME} \tab Input-oriented scale-mix efficiency score \emph{(\code{orientation = "in"})}\cr
+      \code{OTE.ITE} \tab Geometric mean of \code{OTE} and \code{ITE} \emph{(\code{orientation = "in-out"})}\cr
+      \code{OSE.ISE} \tab Geometric mean of \code{OSE} and \code{ISE} \emph{(\code{orientation = "in-out"})}\cr
+      \code{OME.IME} \tab Geometric mean of \code{OME} and \code{IME} \emph{(\code{orientation = "in-out"})}\cr
+      \code{ROSE.RISE} \tab Geometric mean of \code{ROSE} and \code{RISE} \emph{(\code{orientation = "in-out"})}\cr
+      \code{OSME.ISME} \tab Geometric mean of \code{OSME} and \code{ISME} \emph{(\code{orientation = "in-out"})}\cr
+      \code{RME} \tab Residual mix efficiency score}}
+
   \item{Changes}{Change indices of the different elements of \code{Levels} are provided. Each change is prefixed by 
    \code{"d"} (e.g. profitability change is denoted \code{dPROF}, output-oriented efficiency change is denoted \code{dOTE}, etc.).\cr}
 
