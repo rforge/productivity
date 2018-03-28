@@ -1,6 +1,6 @@
 Package: productivity
 Version: 1.1.0
-Date: 2018-03-26
+Date: 2018-03-28
 Title: Indices of Productivity Using Data Envelopment Analysis (DEA)
 Authors@R: c(
   person("K Hervé", "Dakpo", role = "aut"),
